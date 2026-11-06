@@ -1,3 +1,9 @@
 spring:
   application:
     name: spring-boot-base
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+server:
+  port: ${SERVER_PORT:8080}
