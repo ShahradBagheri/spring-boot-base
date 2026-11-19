@@ -12,7 +12,7 @@ This document is the recommended execution order for the issues in this reposito
 
 ## Phase 1 — Architecture and module foundation
 
-1. [#87 — Define module boundaries and dependency rules](https://github.com/ShahradBagheri/spring-boot-base/issues/87)
+1. [#87 — Define module boundaries and dependency rules](https://github.com/ShahradBagheri/spring-boot-base/issues/87) — see [Module boundaries and dependency rules](MODULE-BOUNDARIES.md).
 2. [#8 — Review the BaseEntity contract](https://github.com/ShahradBagheri/spring-boot-base/issues/8) — do this design review before moving the existing JPA code.
 3. [#88 — Convert the root project into a Maven parent and aggregator POM](https://github.com/ShahradBagheri/spring-boot-base/issues/88)
 4. [#89 — Create framework-independent base-core](https://github.com/ShahradBagheri/spring-boot-base/issues/89)
