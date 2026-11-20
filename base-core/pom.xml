@@ -17,4 +17,51 @@
     <name>Base Core</name>
     <description>Framework-independent contracts shared by the modules</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-framework-independence</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.springframework:*</exclude>
+                                        <exclude>org.springframework.boot:*</exclude>
+                                        <exclude>org.hibernate:*</exclude>
+                                        <exclude>jakarta.persistence:jakarta.persistence-api</exclude>
+                                        <exclude>org.postgresql:*</exclude>
+                                        <exclude>com.h2database:*</exclude>
+                                        <exclude>com.mysql:*</exclude>
+                                        <exclude>org.mariadb.jdbc:*</exclude>
+                                        <exclude>com.microsoft.sqlserver:*</exclude>
+                                        <exclude>org.hsqldb:*</exclude>
+                                        <exclude>org.xerial:sqlite-jdbc</exclude>
+                                    </excludes>
+                                    <message>base-core must stay framework-independent: no Spring, Hibernate, JPA, or JDBC driver dependencies.</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
