@@ -23,6 +23,8 @@ This document is the recommended execution order for the issues in this reposito
 
 Initial modules should be only `base-core`, `base-data-jpa`, and `demo-app`. Add optional modules when their features are implemented, rather than creating empty modules in advance.
 
+Status: items 3 to 6 landed as one change. The root `pom.xml` is now a `pom`-packaged aggregator and parent, it holds no source code, and the three child modules inherit the group, version, compiler settings, and managed dependency versions from it. Remaining work for this phase is verification ([#92](https://github.com/ShahradBagheri/spring-boot-base/issues/92)) and documentation ([#93](https://github.com/ShahradBagheri/spring-boot-base/issues/93)).
+
 ## Phase 2 — JPA foundation
 
 9. [#9 — Verify BaseEntity mapping and identifier generation](https://github.com/ShahradBagheri/spring-boot-base/issues/9)
