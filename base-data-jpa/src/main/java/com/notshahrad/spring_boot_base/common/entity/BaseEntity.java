@@ -1,6 +1,12 @@
 package com.notshahrad.spring_boot_base.common.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,6 +23,8 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
+    private static final int ACTOR_MAX_LENGTH = 100;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -26,7 +34,7 @@ public abstract class BaseEntity {
     private Instant createdAt;
 
     @CreatedBy
-    @Column(updatable = false, length = 100)
+    @Column(updatable = false, length = ACTOR_MAX_LENGTH)
     private String createdBy;
 
     @LastModifiedDate
@@ -34,7 +42,7 @@ public abstract class BaseEntity {
     private Instant updatedAt;
 
     @LastModifiedBy
-    @Column(length = 100)
+    @Column(length = ACTOR_MAX_LENGTH)
     private String updatedBy;
 
     @Version
@@ -46,21 +54,26 @@ public abstract class BaseEntity {
 
     private Instant deletedAt;
 
-    @Column(length = 100)
+    @Column(length = ACTOR_MAX_LENGTH)
     private String deletedBy;
 
     protected BaseEntity() {
     }
 
     public void softDelete(String deletedBy) {
-        if (deleted) {
-            return;
-        }
-
         Objects.requireNonNull(deletedBy, "deletedBy must not be null");
 
         if (deletedBy.isBlank()) {
             throw new IllegalArgumentException("deletedBy must not be blank");
+        }
+
+        if (deletedBy.codePointCount(0, deletedBy.length()) > ACTOR_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "deletedBy must not be longer than " + ACTOR_MAX_LENGTH + " characters");
+        }
+
+        if (deleted) {
+            return;
         }
 
         this.deleted = true;

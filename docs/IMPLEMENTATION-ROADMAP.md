@@ -13,7 +13,7 @@ This document is the recommended execution order for the issues in this reposito
 ## Phase 1 — Architecture and module foundation
 
 1. [#87 — Define module boundaries and dependency rules](https://github.com/ShahradBagheri/spring-boot-base/issues/87) — see [Module boundaries and dependency rules](MODULE-BOUNDARIES.md).
-2. [#8 — Review the BaseEntity contract](https://github.com/ShahradBagheri/spring-boot-base/issues/8) — do this design review before moving the existing JPA code.
+2. [#8 — Review the BaseEntity contract](https://github.com/ShahradBagheri/spring-boot-base/issues/8) — see [BaseEntity contract](BASE-ENTITY-CONTRACT.md).
 3. [#88 — Convert the root project into a Maven parent and aggregator POM](https://github.com/ShahradBagheri/spring-boot-base/issues/88)
 4. [#89 — Create framework-independent base-core](https://github.com/ShahradBagheri/spring-boot-base/issues/89)
 5. [#90 — Create base-data-jpa and move the JPA foundation](https://github.com/ShahradBagheri/spring-boot-base/issues/90)
@@ -130,4 +130,4 @@ MCP belongs in an optional `base-mcp-server` module. Verify compatibility with t
 
 ## Immediate next step
 
-Start with **[#87 — Define module boundaries and dependency rules](https://github.com/ShahradBagheri/spring-boot-base/issues/87)**. Once that is complete, review #8 before moving the existing JPA foundation into its dedicated module.
+The design reviews in [#87](https://github.com/ShahradBagheri/spring-boot-base/issues/87) and [#8](https://github.com/ShahradBagheri/spring-boot-base/issues/8) are recorded in [Module boundaries and dependency rules](MODULE-BOUNDARIES.md) and [BaseEntity contract](BASE-ENTITY-CONTRACT.md). Complete the structural work in [#88](https://github.com/ShahradBagheri/spring-boot-base/issues/88)–[#92](https://github.com/ShahradBagheri/spring-boot-base/issues/92) before moving the existing JPA foundation into its dedicated module.
