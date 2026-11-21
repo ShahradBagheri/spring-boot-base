@@ -8,7 +8,9 @@ This guide describes the modules that exist in the repository today and how to a
 | --- | --- | --- |
 | `base-core/` | `com.notshahrad:base-core:0.0.1-SNAPSHOT` | Framework-independent exceptions and shared application contracts |
 | `base-data-jpa/` | `com.notshahrad:base-data-jpa:0.0.1-SNAPSHOT` | JPA mapped superclass `BaseEntity`, UUID identifier, timestamps, optimistic-lock version and deletion metadata, and opt-in auditing configuration |
-| `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application, REST concerns, external configuration, PostgreSQL connection and app-specific tests |
+| `base-web/` | `com.notshahrad:base-web:0.0.1-SNAPSHOT` | Reusable API response contracts and Spring MVC exception mapping |
+| `base-security/` | `com.notshahrad:base-security:0.0.1-SNAPSHOT` | Optional Spring Security baseline, authentication/authorization error responses and method security |
+| `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
 | `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
 
 The root has `<packaging>pom</packaging>`. Only `demo-app` applies the Spring Boot Maven plugin to build an executable JAR. Library modules produce ordinary JAR files.
@@ -21,16 +23,24 @@ Current project-module dependencies:
 spring-boot-base (parent / aggregator)
   base-core                (no project-module dependency)
   base-data-jpa            (no project-module dependency)
+  base-web
+    └── base-core
+  base-security
+    └── base-web
   demo-app
     ├── base-core
-    └── base-data-jpa
+    ├── base-data-jpa
+    ├── base-web
+    └── base-security
 ```
 
 The parent/aggregator relationship is not a runtime dependency. Maven compiles modules in dependency order based on actual `<dependencies>` declarations, not on the order written in `<modules>`.
 
 - `base-core` must not import Spring, Hibernate, Jakarta Persistence or a database driver. Its `maven-enforcer-plugin` rules and the [reactor verification script](../scripts/verify_reactor.py) guard this boundary.
 - `base-data-jpa` owns persistence infrastructure and depends on Spring Data JPA. It may depend on `base-core` in the future **only if it starts using a core type**. It must not depend on `demo-app`.
-- `demo-app` may depend on both library modules and holds application runtime configuration and application-level integrations.
+- `base-web` depends on `base-core` for application exceptions and provides web response contracts and the MVC exception handler. It does not depend on JPA, `base-security` or `demo-app`.
+- `base-security` depends on `base-web` for the API error response contract and adds Spring Security only for consumers that explicitly use this module. It does not depend on `demo-app`.
+- `demo-app` may depend on all four library modules and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.
 - The root `<dependencyManagement>` entries only manage coordinates and versions; they do **not** add dependencies by themselves.
@@ -130,7 +140,7 @@ Its [POM](../demo-app/pom.xml) has explicit project dependencies managed by the 
 
 Its application entry point is `com.notshahrad.spring_boot_base.SpringBootBaseApplication`. The application supplies its own `AuditorAware<String>` bean (currently returning `system`), and imports `JpaAuditingConfiguration` from `base-data-jpa` via `demo-app/src/main/java/com/notshahrad/spring_boot_base/config/JpaConfig.java`. This keeps the auditing policy application-specific.
 
-The application module also owns its HTTP exception handler and response DTOs. Those web-layer types must not be moved into the framework-independent `base-core` module.
+HTTP exception handlers and shared API DTOs are in `base-web`, not in `demo-app`. Spring Security configuration and 401/403 error mapping are in `base-security`. Both are reusable JARs, never dependencies of `base-core`. The demo application owns controllers and feature-specific DTOs.
 
 The [feature extension guide](EXTENDING.md) explains where to put new entities, repositories, services, request/response records, controllers, validation rules and tests. Shared web and security configuration stays in `demo-app`; the documented [security policy](SECURITY_POLICY.md) defines access expectations for new HTTP endpoints.
 
@@ -174,13 +184,13 @@ Do not create a placeholder module until its functionality is ready. When adding
 7. Add tests and module-boundary enforcement, and update the [reactor verification script](../scripts/verify_reactor.py) if its expected module set or dependency rules change.
 8. Run `mvn clean verify`, inspect `mvn dependency:tree` and verify the consuming application.
 
-For example, a planned `base-security` module may depend on `base-core` and Spring Security, while `base-core` must never acquire a dependency on `base-security`. An application can choose to add `base-security` separately.
+The implemented `base-security` module depends on `base-web` and Spring Security; it does not depend on `demo-app`, JPA or a specific login method. An application can omit `base-security` entirely or add it and import `SecurityConfig` where its component scan does not cover the configuration package. For a custom security policy, provide your own `SecurityFilterChain` before the default bean is registered.
 
 ## Planned optional modules and capabilities
 
 | Planned concern | Likely responsibility |
 | --- | --- |
-| Reusable security module | Potential extraction of application security baseline and authorization policy |
+| Additional authentication modules | Reusable authentication and identity interfaces, provider implementations and authorization policies |
 | Google / Apple OIDC sign-in | Optional OAuth2/OIDC identity integration and account linking |
 | Email/password login and outbound email | Account credentials, verification, recovery and configurable email delivery |
 | Phone-number login | Phone normalization, OTP lifecycle and SMS integration |

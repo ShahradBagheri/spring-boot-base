@@ -27,12 +27,12 @@
             <artifactId>base-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
+            <groupId>com.notshahrad</groupId>
+            <artifactId>base-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc</artifactId>
+            <groupId>com.notshahrad</groupId>
+            <artifactId>base-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

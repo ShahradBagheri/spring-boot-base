@@ -1,6 +1,6 @@
 # Spring Boot Base
 
-A reusable Java 25 / Spring Boot 4.1.2 foundation built as a single Maven multi-module repository. The library modules are reusable JARs; `demo-app` is the only executable Spring Boot application.
+A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repository. `base-core`, `base-data-jpa`, `base-web` and `base-security` are separate library JARs; `demo-app` is the only executable application.
 
 ## Requirements
 
@@ -15,7 +15,9 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation built as a single Maven multi-
 | --- | --- | --- |
 | `base-core` | JAR | Framework-independent application exceptions and contracts |
 | `base-data-jpa` | JAR | Reusable JPA `BaseEntity`, mapping and opt-in auditing configuration |
-| `demo-app` | Executable Spring Boot JAR | Application entry point, HTTP and runtime configuration, datasource credentials supplied via environment variables |
+| `base-web` | JAR | Reusable API error/success DTOs and MVC exception handling |
+| `base-security` | JAR | Optional security filter chain, CSRF baseline, method-level authorization and JSON 401/403 responses |
+| `demo-app` | Executable Spring Boot JAR | Application entry point, sample endpoints, migrations, and runtime configuration |
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
 
@@ -71,6 +73,6 @@ See [demo-app instructions](demo-app/README.md) for further runtime details.
 
 ## Project status
 
-The three modules above exist today. Core exceptions, JPA mapping, Flyway database migrations, Testcontainers integration testing, and API error contracts are implemented. Check the [security policy](docs/SECURITY_POLICY.md) for the current security baseline and limitations; sign-in, Google/Apple OIDC, outbound email, phone-based login, guest identities, and MCP integrations remain separate planned features. Do not treat test authentication as a working production login mechanism.
+The four reusable library modules and `demo-app` above exist today. Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts and optional Spring Security are implemented. `demo-app` opts in to `base-web` and `base-security` using Maven dependencies. Check the [security policy](docs/SECURITY_POLICY.md) for the current security baseline and limitations; sign-in, Google/Apple OIDC, outbound email, phone-based login, guest identities, and MCP integrations remain separate planned features. Do not treat test authentication as a working production login mechanism.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).

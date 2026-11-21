@@ -23,6 +23,8 @@
     <modules>
         <module>base-core</module>
         <module>base-data-jpa</module>
+        <module>base-web</module>
+        <module>base-security</module>
         <module>demo-app</module>
     </modules>
 
@@ -40,6 +42,16 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-data-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

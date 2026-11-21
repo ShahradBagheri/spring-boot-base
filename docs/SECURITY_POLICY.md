@@ -2,7 +2,7 @@
 
 ## Implemented baseline
 
-The runnable `demo-app` applies a **secure-by-default** Spring Security filter chain in `config/SecurityConfig.java`. Framework-independent `base-core` and `base-data-jpa` do not depend on security.
+The reusable `base-security` Maven JAR owns the secure-by-default Spring Security filter chain in `base-security/src/main/java/com/notshahrad/spring_boot_base/config/SecurityConfig.java`. The executable `demo-app` opts in via a direct Maven dependency on `base-security`, and its own `base-web` dependency supplies the shared `ApiError` contract. `base-core` and `base-data-jpa` remain independent of security.
 
 The baseline protects all new application routes by default. Only the HTTP `GET` and `HEAD` methods on `/actuator/health` are anonymous. The health endpoint is intended for load balancers and operational checks; avoid exposing privileged health details.
 
@@ -14,7 +14,7 @@ The baseline protects all new application routes by default. Only the HTTP `GET`
 | All other application and actuator requests | Authenticated |
 | Any newly added route not explicitly matched | Authenticated |
 
-The `SecurityExampleController` demonstrates how a controller can use the authenticated principal and how an explicit authority rule protects administrative routes. These endpoints are examples only and do not implement user management.
+The `SecurityExampleController` in `demo-app` demonstrates principal access and an explicit method-level `@PreAuthorize("hasRole('ADMIN')")` rule. The `base-security` filter chain does not contain application-specific or demo-specific admin URL matchers. These endpoints are examples only and do not implement user management.
 
 Authenticated access is not necessarily authorized access: services and endpoints with sensitive operations must enforce appropriate role, ownership, tenant, and resource-specific rules.
 
@@ -47,15 +47,15 @@ CSRF remains enabled at the Spring Security default; it is not globally disabled
 
 ## Customization
 
-`SecurityConfig` provides its baseline `SecurityFilterChain` only when the application has not defined another `SecurityFilterChain`, using `@ConditionalOnMissingBean`. A consuming application can supply its own filter chain with explicit public route and authority matchers. Preserve a fail-closed `anyRequest().authenticated()` fallback, or an even stricter deny-all fallback, and explicitly test added public exceptions.
+`base-security` is an optional JAR. A consuming application adds an explicit dependency on it and imports `com.notshahrad.spring_boot_base.config.SecurityConfig` (for apps outside the library's component-scan package). The demo app already discovers that configuration through its application root package. The configuration provides its baseline `SecurityFilterChain` only when the application has not registered one, using `@ConditionalOnMissingBean`. A consuming application can supply its own filter chain with explicit public route and authority matchers. Preserve a fail-closed `anyRequest().authenticated()` fallback, or an even stricter deny-all fallback, and explicitly test added public exceptions.
 
 The empty in-memory `UserDetailsService` is also conditional on a custom `UserDetailsService` being absent. Replace it with the authentication integration appropriate for the application; do not add hardcoded accounts or commit secrets.
 
-Security-filter error handling is defined in `SecurityConfig`; general MVC exception handling lives in `GlobalExceptionHandler`. Both reuse the `ApiError` record but are separate request-processing layers.
+Security-filter error handling is defined in the `base-security` `SecurityConfig`; general MVC exception handling lives in the `base-web` `GlobalExceptionHandler`. Both reuse `base-web`'s `ApiError` record but are separate request-processing layers.
 
 ## Tests and limitations
 
-`SecurityAccessMockMvcTest` verifies public health access, anonymous 401 errors, protected routes, 403 for a non-admin principal, and authorized access by simulated authenticated users. The existing error-handler MockMvc tests run with test authentication and a CSRF token on POST requests.
+`demo-app`'s `SecurityAccessMockMvcTest` verifies public health access, anonymous 401 errors, protected routes, 403 for a non-admin principal, and authorized access by simulated authenticated users. The reactor verification script checks that `base-security` depends on `base-web`, never on `demo-app`, and that the packaged executable includes both optional JARs. The existing error-handler MockMvc tests run with test authentication and a CSRF token on POST requests.
 
 Only `GET` and `HEAD` health checks are public. Unknown routes are still authenticated, even when a route would ultimately return 404. This is deliberate to avoid exposing the existence of internal resources to anonymous callers.
 
