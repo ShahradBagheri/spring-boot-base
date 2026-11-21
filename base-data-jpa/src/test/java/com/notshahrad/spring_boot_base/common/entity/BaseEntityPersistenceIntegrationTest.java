@@ -191,10 +191,13 @@ class BaseEntityPersistenceIntegrationTest {
         entityManager.flush();
 
         UUID id = record.getId();
-        var originalDeletedAt = record.getDeletedAt();
-        var originalVersion = record.getVersion();
+        entityManager.clear();
 
-        record.softDelete("second-actor");
+        TestRecord persisted = entityManager.find(TestRecord.class, id);
+        var originalDeletedAt = persisted.getDeletedAt();
+        var originalVersion = persisted.getVersion();
+
+        persisted.softDelete("second-actor");
         entityManager.flush();
         entityManager.clear();
 
