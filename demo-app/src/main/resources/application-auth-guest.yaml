@@ -1,0 +1,4 @@
+base:
+  auth:
+    guest:
+      enabled: true
