@@ -25,6 +25,7 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repo
 | `base-mail-smtp` | JAR | Opt-in SMTP delivery for outbound email |
 | `base-auth-phone` | JAR | Optional verified phone login identities |
 | `base-sms` | JAR | Provider-independent SMS contracts |
+| `base-mcp-server` | JAR | Optional MCP HTTP transport and bearer-token security |
 | `demo-app` | Executable Spring Boot JAR | Application entry point, sample endpoints, migrations, and runtime configuration |
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
@@ -81,6 +82,6 @@ See the [demo app instructions](demo-app/README.md) for runtime details and the 
 
 ## Project status
 
-Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. The [email authentication model](docs/EMAIL_AUTHENTICATION_MODEL.md) describes email identities, signup, verification, and password reset. See the [email/password setup guide](docs/EMAIL_PASSWORD_SETUP.md) for the opt-in flow. See the [email configuration guide](docs/EMAIL_CONFIGURATION.md) for independent enablement, template customization, SMTP delivery, and sender-domain setup. See the [phone authentication setup guide](docs/PHONE_AUTHENTICATION_SETUP.md) to enable SMS signup and login. See the [guest session guide](docs/GUEST_SESSION_MODEL.md) for opt-in browser guest identities. The optional guest draft example includes account transfer and expiry cleanup. MCP integration is planned.
+Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. The [email authentication model](docs/EMAIL_AUTHENTICATION_MODEL.md) describes email identities, signup, verification, and password reset. See the [email/password setup guide](docs/EMAIL_PASSWORD_SETUP.md) for the opt-in flow. See the [email configuration guide](docs/EMAIL_CONFIGURATION.md) for independent enablement, template customization, SMTP delivery, and sender-domain setup. See the [phone authentication setup guide](docs/PHONE_AUTHENTICATION_SETUP.md) to enable SMS signup and login. See the [guest session guide](docs/GUEST_SESSION_MODEL.md) for opt-in browser guest identities. The optional guest draft example includes account transfer and expiry cleanup. See the [MCP server architecture](docs/MCP_SERVER_ARCHITECTURE.md) for the opt-in server foundation.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).

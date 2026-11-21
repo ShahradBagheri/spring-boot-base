@@ -1,0 +1,11 @@
+base:
+  mcp:
+    server:
+      enabled: true
+      issuer: ${MCP_ISSUER}
+      resource: ${MCP_RESOURCE}
+spring:
+  ai:
+    mcp:
+      server:
+        name: spring-boot-base

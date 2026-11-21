@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -49,7 +49,8 @@ assert dependencies["base-mail"] == set()
 assert dependencies["base-mail-smtp"] == {"base-mail"}
 assert dependencies["base-auth-phone"] == {"base-auth"}
 assert dependencies["base-sms"] == set()
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms"}
+assert dependencies["base-mcp-server"] == set()
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server"}
 
 visited = set()
 visiting = set()
