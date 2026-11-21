@@ -34,6 +34,42 @@ class BaseEntityPersistenceIntegrationTest {
     private EntityManager entityManager;
 
     @Test
+    void mapsUuidIdentifierFromBaseEntity() {
+        var entityType = entityManager.getMetamodel().entity(TestRecord.class);
+        var identifier = entityType.getId(UUID.class);
+
+        assertEquals("id", identifier.getName());
+        assertEquals(UUID.class, identifier.getJavaType());
+        assertEquals(BaseEntity.class, identifier.getJavaMember().getDeclaringClass());
+    }
+
+    @Test
+    @Transactional
+    void generatesDistinctIdentifiersAndReloadsPersistedEntities() {
+        TestRecord first = new TestRecord();
+        TestRecord second = new TestRecord();
+
+        assertNull(first.getId());
+        assertNull(second.getId());
+
+        entityManager.persist(first);
+        entityManager.persist(second);
+        entityManager.flush();
+
+        UUID firstId = first.getId();
+        UUID secondId = second.getId();
+
+        assertNotNull(firstId);
+        assertNotNull(secondId);
+        assertNotEquals(firstId, secondId);
+
+        entityManager.clear();
+
+        assertNotNull(entityManager.find(TestRecord.class, firstId));
+        assertNotNull(entityManager.find(TestRecord.class, secondId));
+    }
+
+    @Test
     @Transactional
     void persistsInheritedUuidVersionAndAuditFields() {
         TestRecord record = new TestRecord();
