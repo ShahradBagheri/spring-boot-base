@@ -10,6 +10,7 @@ This guide describes the modules that exist in the repository today and how to a
 | `base-data-jpa/` | `com.notshahrad:base-data-jpa:0.0.1-SNAPSHOT` | JPA mapped superclass `BaseEntity`, UUID identifier, timestamps, optimistic-lock version and deletion metadata, and opt-in auditing configuration |
 | `base-web/` | `com.notshahrad:base-web:0.0.1-SNAPSHOT` | Reusable API response contracts and Spring MVC exception mapping |
 | `base-security/` | `com.notshahrad:base-security:0.0.1-SNAPSHOT` | Optional Spring Security baseline, authentication/authorization error responses and method security |
+| `base-auth/` | `com.notshahrad:base-auth:0.0.1-SNAPSHOT` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
 | `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
 | `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
 
@@ -27,11 +28,14 @@ spring-boot-base (parent / aggregator)
     └── base-core
   base-security
     └── base-web
+  base-auth
+    └── base-data-jpa
   demo-app
     ├── base-core
     ├── base-data-jpa
     ├── base-web
-    └── base-security
+    ├── base-security
+    └── base-auth
 ```
 
 The parent/aggregator relationship is not a runtime dependency. Maven compiles modules in dependency order based on actual `<dependencies>` declarations, not on the order written in `<modules>`.
@@ -40,7 +44,8 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - `base-data-jpa` owns persistence infrastructure and depends on Spring Data JPA. It may depend on `base-core` in the future **only if it starts using a core type**. It must not depend on `demo-app`.
 - `base-web` depends on `base-core` for application exceptions and provides web response contracts and the MVC exception handler. It does not depend on JPA, `base-security` or `demo-app`.
 - `base-security` depends on `base-web` for the API error response contract and adds Spring Security only for consumers that explicitly use this module. It does not depend on `demo-app`.
-- `demo-app` may depend on all four library modules and holds runtime configuration and application-level integrations.
+- `base-auth` depends on `base-data-jpa` for persistent users and external login identity mappings; it does not depend on Spring Security, an OAuth2 Client or `demo-app`. It must only receive identities that have already been validated by a trusted authentication adapter.
+- `demo-app` may depend on the library modules it explicitly opts into and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.
 - The root `<dependencyManagement>` entries only manage coordinates and versions; they do **not** add dependencies by themselves.
