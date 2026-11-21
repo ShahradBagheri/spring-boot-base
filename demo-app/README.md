@@ -29,6 +29,8 @@ java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
 
 The application-specific datasource configuration is in `src/main/resources/application-dev.yaml`. The shared server port and active profile defaults are in `application.yaml`. No database credentials are committed.
 
+An empty PostgreSQL database is initialized by Flyway on startup. The first migration creates `application_settings`; Hibernate checks the resulting schema using `ddl-auto=validate`. Migrations are stored in `src/main/resources/db/migration` and are tracked in `flyway_schema_history`. See the [migration guide](../docs/DB_MIGRATIONS.md) before using an existing database.
+
 Spring Boot does not automatically load a `.env` file. If you use one locally, arrange for your IDE or environment to expose its values as process environment variables.
 
 ## Run tests
