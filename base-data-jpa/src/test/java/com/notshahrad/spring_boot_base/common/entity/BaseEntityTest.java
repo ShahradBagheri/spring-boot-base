@@ -3,12 +3,44 @@ package com.notshahrad.spring_boot_base.common.entity;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BaseEntityTest {
 
     private static class TestEntity extends BaseEntity {
+    }
+
+    @Test
+    void distinctTransientEntitiesAreNotEqual() {
+        TestEntity first = new TestEntity();
+        TestEntity second = new TestEntity();
+
+        assertEquals(first, first);
+        assertNotEquals(first, second);
+        assertNotEquals(second, first);
+        assertNotEquals(first, null);
+        assertNotEquals(first, new Object());
+    }
+
+    @Test
+    void transientEntityHashCodeIsStableAcrossMutableFields() {
+        TestEntity entity = new TestEntity();
+        Set<TestEntity> entities = new HashSet<>();
+        int originalHashCode = entity.hashCode();
+
+        entities.add(entity);
+        entity.softDelete("test-user");
+
+        assertEquals(originalHashCode, entity.hashCode());
+        assertTrue(entities.contains(entity));
+
+        entity.restore();
+
+        assertEquals(originalHashCode, entity.hashCode());
+        assertTrue(entities.contains(entity));
     }
 
     @Test
