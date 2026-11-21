@@ -35,6 +35,14 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.
 - The root `<dependencyManagement>` entries only manage coordinates and versions; they do **not** add dependencies by themselves.
 
+## BaseEntity equality
+
+`BaseEntity` compares persisted entities by UUID only when they represent the same effective entity class. Two different transient instances are never equal because their identifiers are null; an entity is always equal to itself. Hibernate proxies are compared using their underlying persistent class, so a proxy and a loaded entity with the same ID compare equally.
+
+`hashCode()` is based on the persistent entity class, not the generated identifier or mutable fields. This value stays stable before and after `persist()`, so entities already stored in a `HashSet` or used as `HashMap` keys remain findable after UUID generation, auditing changes, or soft deletion.
+
+Both methods are final in `BaseEntity` to preserve the equality contract for subclasses. Do not add Lombok `@EqualsAndHashCode` or override either method in entity subclasses. A constant hash per entity class is a deliberate tradeoff: it avoids mutable hash codes, though many entities of one type will share a hash bucket.
+
 ## Build and test
 
 All commands are executed from the repository root with Java 25 and Maven 3.9+.

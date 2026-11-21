@@ -1,14 +1,64 @@
 package com.notshahrad.spring_boot_base.common.entity;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BaseEntityTest {
 
     private static class TestEntity extends BaseEntity {
+    }
+
+    private static class OtherEntity extends BaseEntity {
+    }
+
+    @Test
+    void distinctTransientEntitiesAreNotEqual() {
+        TestEntity first = new TestEntity();
+        TestEntity second = new TestEntity();
+
+        assertEquals(first, first);
+        assertNotEquals(first, second);
+        assertNotEquals(second, first);
+        assertNotEquals(first, null);
+        assertNotEquals(first, new Object());
+    }
+
+    @Test
+    void differentEntityTypesWithSameIdentifierAreNotEqual() {
+        UUID id = UUID.randomUUID();
+        TestEntity first = new TestEntity();
+        OtherEntity second = new OtherEntity();
+
+        ReflectionTestUtils.setField(first, "id", id);
+        ReflectionTestUtils.setField(second, "id", id);
+
+        assertNotEquals(first, second);
+        assertNotEquals(second, first);
+    }
+
+    @Test
+    void transientEntityHashCodeIsStableAcrossMutableFields() {
+        TestEntity entity = new TestEntity();
+        Set<TestEntity> entities = new HashSet<>();
+        int originalHashCode = entity.hashCode();
+
+        entities.add(entity);
+        entity.softDelete("test-user");
+
+        assertEquals(originalHashCode, entity.hashCode());
+        assertTrue(entities.contains(entity));
+
+        entity.restore();
+
+        assertEquals(originalHashCode, entity.hashCode());
+        assertTrue(entities.contains(entity));
     }
 
     @Test
