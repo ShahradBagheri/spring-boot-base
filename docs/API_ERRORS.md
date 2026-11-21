@@ -58,6 +58,18 @@ ApiError validation = ApiError.of(
 
 The response model is intentionally independent of exception handling and HTTP mapping decisions. It does not accept a `Throwable` or include a stack trace, exception class, internal path, or cause. Callers must use **client-safe messages**: never pass raw unexpected exception messages, SQL diagnostics, stack traces, credentials, or other internal details into the public response.
 
-## Integration status
+## HTTP exception mapping
 
-Issue #15 defines and tests the `ApiError` contract only. Existing `GlobalExceptionHandler` methods currently return `ApiResponse` or `ValidationErrorResponse`; they are not switched to `ApiError` in this issue. Updating those exception handlers, their HTTP status mapping, and endpoint-level tests is separate work. Until those handlers are migrated, not every live API error will use this new schema.
+`GlobalExceptionHandler` returns this response structure for the common Spring MVC failures handled by the application:
+
+| Failure | HTTP status | Public message | `fieldErrors` |
+| --- | --- | --- | --- |
+| `ResourceNotFoundException` | 404 | Exception's intentional public message | `{}` |
+| `BusinessException` | 400 | Exception's intentional public message | `{}` |
+| Bean validation on `@Valid @RequestBody` | 400 | `Validation failed` | One entry per invalid field |
+| Malformed request JSON | 400 | `Malformed request body` | `{}` |
+| Unexpected exception | 500 | `An unexpected error occurred` | `{}` |
+
+Unexpected exceptions are logged server-side and their internal messages are not included in the response. Validation errors use the configured constraint messages without including rejected values; if a message is missing, the fallback is `Invalid value`. When a field has multiple violations, the first message is returned for that field.
+
+The exception types live in framework-independent `base-core`; HTTP status mapping and `ApiError` serialization live in `demo-app`. HTTP-level behavior is exercised through MockMvc tests. Other framework-generated errors not explicitly handled here may still use Spring's default response format.
