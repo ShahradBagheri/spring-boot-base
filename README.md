@@ -20,6 +20,8 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repo
 | `base-auth` | JAR | Optional local users and issuer/subject identity mapping, with fail-closed account linking |
 | `base-auth-oauth2` | JAR | Optional Google/Apple OAuth2 Client and local OIDC principal adaptation; disabled by default |
 | `base-auth-token` | JAR | Optional first-party access JWT issuance and bearer validation |
+| `base-auth-email` | JAR | Optional storage and normalization for verified email login identities |
+| `base-mail` | JAR | Provider-independent outbound email contracts |
 | `demo-app` | Executable Spring Boot JAR | Application entry point, sample endpoints, migrations, and runtime configuration |
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
@@ -76,6 +78,6 @@ See the [demo app instructions](demo-app/README.md) for runtime details and the 
 
 ## Project status
 
-Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. Email and phone authentication, guest identities, and MCP integrations are planned.
+Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. The [email authentication model](docs/EMAIL_AUTHENTICATION_MODEL.md) describes the email identity and outbound mail foundation and the remaining signup, verification, and delivery work. Phone authentication, guest identities, and MCP integrations are planned.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).
