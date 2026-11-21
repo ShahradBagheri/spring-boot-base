@@ -35,13 +35,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = "base.auth.phone.rate.verifications.per-phone=12")
 @AutoConfigureMockMvc
-@ActiveProfiles("auth-phone")
+@ActiveProfiles({"auth-phone", "auth-guest", "guest-drafts"})
 class PhoneAuthPostgresIT extends AbstractPostgresIntegrationTest {
 
     private static final String PREFIX = "/api/auth/phone";
@@ -66,17 +67,32 @@ class PhoneAuthPostgresIT extends AbstractPostgresIntegrationTest {
     @Test
     void signupAndLoginResolveTheSameLocalUserWithFreshSessions() throws Exception {
         String number = "+12025550151";
+        var firstSession = (MockHttpSession) http.perform(post("/api/guest/session").with(csrf()))
+                .andExpect(status().isOk()).andReturn().getRequest().getSession(false);
+        http.perform(put("/api/guest/drafts/current").session(firstSession).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content\":\"Draft before signup\"}"))
+                .andExpect(status().isNoContent());
+
         var signup = request("signup", number, "192.0.2.51");
         var signupCode = receiveCode(number);
         assertEquals(0, jdbc.queryForObject(
                 "SELECT COUNT(*) FROM phone_login_identities WHERE phone_number = ?", Integer.class, number));
 
         verify("login", number, signup, signupCode, new MockHttpSession()).andExpect(status().isUnauthorized());
-        var firstSession = new MockHttpSession();
         String beforeLogin = firstSession.getId();
         var established = session(verify("signup", number, signup, signupCode, firstSession));
         assertNotEquals(beforeLogin, established.getId());
         String user = currentUser(established);
+        http.perform(get("/api/guest/drafts/account").session(established)).andExpect(status().isNotFound());
+        http.perform(post("/api/guest/drafts/claim").session(established)).andExpect(status().isForbidden());
+        var csrfResponse = http.perform(get("/api/guest/drafts/csrf").session(established))
+                .andExpect(status().isOk()).andReturn();
+        var claimCsrf = json.readTree(csrfResponse.getResponse().getContentAsString());
+        http.perform(post("/api/guest/drafts/claim").session(established)
+                        .header(claimCsrf.get("headerName").asString(), claimCsrf.get("token").asString()))
+                .andExpect(status().isNoContent());
+        http.perform(get("/api/guest/drafts/account").session(established))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content").value("Draft before signup"));
         verify("signup", number, signup, signupCode, new MockHttpSession()).andExpect(status().isUnauthorized());
 
         var login = request("login", number, "192.0.2.51");

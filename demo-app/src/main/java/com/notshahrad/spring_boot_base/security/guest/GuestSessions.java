@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 final class GuestSessions {
 
@@ -45,6 +46,16 @@ final class GuestSessions {
             return Optional.of(guest);
         }
         return Optional.empty();
+    }
+
+    <T> Optional<T> withCurrent(HttpServletRequest request, Function<Identity, T> action) {
+        var session = request.getSession(false);
+        if (session == null) {
+            return Optional.empty();
+        }
+        synchronized (WebUtils.getSessionMutex(session)) {
+            return current(request).map(action);
+        }
     }
 
     void end(HttpServletRequest request) {

@@ -2,6 +2,7 @@ package com.notshahrad.spring_boot_base.security.guest;
 
 import com.notshahrad.spring_boot_base.common.response.ApiError;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,14 +49,23 @@ class GuestWebConfiguration {
     @Bean
     @Order(1)
     SecurityFilterChain guestFilterChain(HttpSecurity http, JsonMapper json,
-                                        AuthorizationManager<RequestAuthorizationContext> guestOnly) throws Exception {
+                                        AuthorizationManager<RequestAuthorizationContext> guestOnly,
+                                        ObjectProvider<GuestDraftService> drafts) throws Exception {
         return http.securityMatcher("/api/guest/**")
-                .authorizeHttpRequests(routes -> routes
-                        .requestMatchers(HttpMethod.GET, CSRF).anonymous()
-                        .requestMatchers(HttpMethod.POST, SESSION).anonymous()
-                        .requestMatchers(HttpMethod.GET, SESSION).access(guestOnly)
-                        .requestMatchers(HttpMethod.DELETE, SESSION).access(guestOnly)
-                        .anyRequest().denyAll())
+                .authorizeHttpRequests(routes -> {
+                    routes.requestMatchers(HttpMethod.GET, CSRF).anonymous()
+                            .requestMatchers(HttpMethod.POST, SESSION).anonymous()
+                            .requestMatchers(HttpMethod.GET, SESSION).access(guestOnly)
+                            .requestMatchers(HttpMethod.DELETE, SESSION).access(guestOnly);
+                    if (drafts.getIfAvailable() != null) {
+                        routes.requestMatchers(HttpMethod.GET, "/api/guest/drafts/current").access(guestOnly)
+                                .requestMatchers(HttpMethod.PUT, "/api/guest/drafts/current").access(guestOnly)
+                                .requestMatchers(HttpMethod.GET, "/api/guest/drafts/account", "/api/guest/drafts/csrf")
+                                .authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/guest/drafts/claim").authenticated();
+                    }
+                    routes.anyRequest().denyAll();
+                })
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint((request, response, exception) ->
                                 writeError(response, json, HttpStatus.UNAUTHORIZED, "Authentication required"))

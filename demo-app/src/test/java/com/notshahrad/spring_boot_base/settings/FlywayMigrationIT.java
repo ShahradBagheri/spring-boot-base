@@ -29,7 +29,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 .load();
 
         try {
-            assertEquals(8, flyway.migrate().migrationsExecuted);
+            assertEquals(9, flyway.migrate().migrationsExecuted);
             assertTrue(flyway.validateWithResult().validationSuccessful);
             assertEquals(0, flyway.migrate().migrationsExecuted);
 
@@ -55,7 +55,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
 
                 try (var statement = connection.prepareStatement(
                         "select table_name from information_schema.tables "
-                                + "where table_schema = ? and table_name in ('app_users', 'external_identities', 'refresh_sessions', 'refresh_credentials', 'email_login_identities', 'email_passwords', 'email_auth_challenges', 'phone_login_identities', 'phone_otp_challenges')")) {
+                                + "where table_schema = ? and table_name in ('app_users', 'external_identities', 'refresh_sessions', 'refresh_credentials', 'email_login_identities', 'email_passwords', 'email_auth_challenges', 'phone_login_identities', 'phone_otp_challenges', 'guest_drafts')")) {
                     statement.setString(1, schema);
                     Set<String> tables = new HashSet<>();
                     try (var result = statement.executeQuery()) {
@@ -63,15 +63,15 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                             tables.add(result.getString(1));
                         }
                     }
-                    assertEquals(Set.of("app_users", "external_identities", "refresh_sessions", "refresh_credentials", "email_login_identities", "email_passwords", "email_auth_challenges", "phone_login_identities", "phone_otp_challenges"), tables);
+                    assertEquals(Set.of("app_users", "external_identities", "refresh_sessions", "refresh_credentials", "email_login_identities", "email_passwords", "email_auth_challenges", "phone_login_identities", "phone_otp_challenges", "guest_drafts"), tables);
                 }
 
                 try (var statement = connection.createStatement();
                      var result = statement.executeQuery(
                              "select count(*) from " + schema
-                                     + ".flyway_schema_history where version in ('1', '2', '3', '4', '5', '6', '7', '8') and success = true")) {
+                                     + ".flyway_schema_history where version in ('1', '2', '3', '4', '5', '6', '7', '8', '9') and success = true")) {
                     assertTrue(result.next());
-                    assertEquals(8, result.getInt(1));
+                    assertEquals(9, result.getInt(1));
                 }
             }
         } finally {
