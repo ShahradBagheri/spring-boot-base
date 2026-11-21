@@ -69,6 +69,8 @@ class SecurityAccessMockMvcTest {
     void defaultConfigurationDoesNotExposeMcpEvenIfStarterIsEnabled() throws Exception {
         assertFalse(context.containsBean("webMvcStatelessServerRouterFunction"));
         assertFalse(context.containsBean("mcpSecurityFilterChain"));
+        assertFalse(context.containsBean("featureGuideMcpEndpoint"));
+        assertFalse(context.containsBean("featureIntegrationPrompts"));
         mockMvc.perform(post("/mcp").with(csrf())).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/.well-known/oauth-protected-resource/mcp")).andExpect(status().isUnauthorized());
     }

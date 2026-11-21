@@ -26,12 +26,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.convention.TestBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -52,6 +55,9 @@ class McpServerMockMvcTest {
     private static final String ISSUER = "https://issuer.example";
     private static final String RESOURCE = "https://api.example/mcp";
     private static final String SCOPE = "mcp:access";
+    private static final String TOOL = "lookup_feature_guide";
+    private static final String RESOURCE_URI = "spring-boot-base://guides/index";
+    private static final String PROMPT = "plan_feature_integration";
     private static final RSAKey KEY = signingKey();
 
     @TestBean(name = "mcpJwtDecoder", enforceOverride = true)
@@ -62,6 +68,9 @@ class McpServerMockMvcTest {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private JsonMapper json;
 
     @Test
     void protectsTransportAndPublishesDiscoveryMetadata() throws Exception {
@@ -103,6 +112,87 @@ class McpServerMockMvcTest {
         mvc.perform(bearer("another-client", ISSUER, RESOURCE, SCOPE, expiry)).andExpect(status().isOk());
     }
 
+    @Test
+    void discoversAndInvokesTheFeatureGuideTool() throws Exception {
+        mvc.perform(authorized("tool-client", "tools/list", Map.of()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.tools", hasSize(1)))
+                .andExpect(jsonPath("$.result.tools[0].name").value(TOOL))
+                .andExpect(jsonPath("$.result.tools[0].annotations.readOnlyHint").value(true))
+                .andExpect(jsonPath("$.result.tools[0].outputSchema.properties.guidePath").exists());
+        mvc.perform(authorized("tool-client", "tools/call", Map.of("name", TOOL, "arguments", Map.of("feature", "phone"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.structuredContent.feature").value("phone"))
+                .andExpect(jsonPath("$.result.structuredContent.guidePath").value("docs/PHONE_AUTHENTICATION_SETUP.md"));
+    }
+
+    @Test
+    void rejectsUnknownOrMissingFeatureKeys() throws Exception {
+        mvc.perform(authorized("invalid-tool-client", "tools/call",
+                        Map.of("name", TOOL, "arguments", Map.of("feature", "../application.yaml"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.isError").value(true));
+        mvc.perform(authorized("invalid-tool-client", "tools/call", Map.of("name", TOOL, "arguments", Map.of())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.isError").value(true));
+    }
+
+    @Test
+    void publishesOnlyTheFixedGuideResource() throws Exception {
+        mvc.perform(authorized("resource-client", "resources/list", Map.of()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.resources", hasSize(1)))
+                .andExpect(jsonPath("$.result.resources[0].uri").value(RESOURCE_URI));
+        mvc.perform(authorized("resource-client", "resources/read", Map.of("uri", RESOURCE_URI)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.contents", hasSize(1)))
+                .andExpect(jsonPath("$.result.contents[0].mimeType").value("text/plain"))
+                .andExpect(jsonPath("$.result.contents[0].text").value(containsString("docs/GUEST_SESSION_MODEL.md")));
+        mvc.perform(authorized("unknown-resource-client", "resources/read", Map.of("uri", "file:///application.yaml")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.error.code").exists());
+    }
+
+    @Test
+    void discoversAndFetchesTheIntegrationPrompt() throws Exception {
+        mvc.perform(authorized("prompt-client", "prompts/list", Map.of()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.prompts", hasSize(1)))
+                .andExpect(jsonPath("$.result.prompts[0].name").value(PROMPT));
+        mvc.perform(authorized("prompt-client", "prompts/get", Map.of("name", PROMPT)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.messages", hasSize(1)))
+                .andExpect(jsonPath("$.result.messages[0].role").value("user"))
+                .andExpect(jsonPath("$.result.messages[0].content.text").value(containsString("Use placeholders for secrets")));
+    }
+
+    @Test
+    void requiresTheMcpScopeForAllThreeCapabilities() throws Exception {
+        assertMcpScope("tools/call", Map.of("name", TOOL, "arguments", Map.of("feature", "oidc")));
+        assertMcpScope("resources/read", Map.of("uri", RESOURCE_URI));
+        assertMcpScope("prompts/get", Map.of("name", PROMPT));
+    }
+
+    private void assertMcpScope(String method, Map<String, ?> params) throws Exception {
+        mvc.perform(rpc(method, params)).andExpect(status().isUnauthorized());
+        String token = sign("limited-client", ISSUER, RESOURCE, "read", Instant.now().plusSeconds(300));
+        mvc.perform(rpc(method, params).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    private MockHttpServletRequestBuilder authorized(String subject, String method, Map<String, ?> params)
+            throws JOSEException {
+        String token = sign(subject, ISSUER, RESOURCE, SCOPE, Instant.now().plusSeconds(300));
+        return rpc(method, params).header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    }
+
+    private MockHttpServletRequestBuilder rpc(String method, Map<String, ?> params) {
+        return post("/mcp").contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON, MediaType.TEXT_EVENT_STREAM)
+                .header("MCP-Protocol-Version", "2025-11-25")
+                .content(json.writeValueAsString(Map.of("jsonrpc", "2.0", "id", 1, "method", method, "params", params)));
+    }
+
     static JwtDecoder decoder() throws JOSEException {
         var settings = new McpSecurityAutoConfiguration.Properties(URI.create(ISSUER), URI.create(RESOURCE), 2, 1200);
         return McpSecurityAutoConfiguration.withValidation(
@@ -111,13 +201,17 @@ class McpServerMockMvcTest {
 
     private MockHttpServletRequestBuilder bearer(String subject, String issuer, String audience, String scope, Instant expiry)
             throws JOSEException {
+        return initialize().header(HttpHeaders.AUTHORIZATION, "Bearer " + sign(subject, issuer, audience, scope, expiry));
+    }
+
+    private String sign(String subject, String issuer, String audience, String scope, Instant expiry) throws JOSEException {
         var claims = new JWTClaimsSet.Builder().subject(subject).issuer(issuer).audience(audience).claim("scope", scope);
         if (expiry != null) {
             claims.expirationTime(Date.from(expiry));
         }
         var jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claims.build());
         jwt.sign(new RSASSASigner(KEY));
-        return initialize().header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.serialize());
+        return jwt.serialize();
     }
 
     private MockHttpServletRequestBuilder initialize() {

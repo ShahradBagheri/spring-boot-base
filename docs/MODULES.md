@@ -81,7 +81,7 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - `base-auth-email` uses `base-auth` local users and the consuming application's PostgreSQL datasource. The demo renders challenge content and dispatches it through `base-mail`. `base-mail` can be used independently for outbound notifications.
 - `base-mail-smtp` implements the `base-mail` sending contract. The demo includes the adapter, and delivery is disabled until explicitly enabled.
 - `base-auth-phone` uses `base-auth` local users and the application's PostgreSQL datasource. The provider-independent SMS abstraction is in `base-sms`. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
-- `base-mcp-server` contains the stateless MCP transport and scoped Spring Security configuration. See the [MCP server architecture](MCP_SERVER_ARCHITECTURE.md).
+- `base-mcp-server` contains the stateless MCP transport and scoped Spring Security configuration. The demo app registers its example tool, resource, and prompt. See the [MCP server architecture](MCP_SERVER_ARCHITECTURE.md).
 - `demo-app` may depend on the library modules it explicitly opts into and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.
@@ -237,6 +237,5 @@ The implemented `base-security` module depends on `base-web` and Spring Security
 | Email/password login and outbound email | Account credentials, verification, recovery and configurable email delivery |
 | Phone-number login | Phone normalization, OTP lifecycle and SMS integration |
 | Guest / anonymous users | Optional guest identity lifecycle and account conversion |
-| MCP server capabilities | Application examples for tools, resources, and prompts |
 
 The final module names and split are not yet implemented or locked. Keep optional authentication and integration dependencies out of the default core, and keep each module's public API as small as practical.
