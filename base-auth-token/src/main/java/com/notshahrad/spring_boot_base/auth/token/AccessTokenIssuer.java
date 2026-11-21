@@ -54,7 +54,7 @@ public final class AccessTokenIssuer {
             throw new AccessDeniedException("Access token issuance requires an authenticated local account");
         }
 
-        return new LocalAuthentication(localUser.getLocalUserId(), authentication.getAuthorities());
+        return new LocalAuthentication(localUser, authentication.getAuthorities());
     }
 
     Jwt sign(UUID userId, UUID sessionId, Collection<? extends GrantedAuthority> authorities) {
@@ -91,6 +91,9 @@ public final class AccessTokenIssuer {
         return keys.encoder().encode(JwtEncoderParameters.from(headers, claims.build()));
     }
 
-    record LocalAuthentication(UUID userId, Collection<? extends GrantedAuthority> authorities) {
+    record LocalAuthentication(LocalUserPrincipal principal, Collection<? extends GrantedAuthority> authorities) {
+        UUID userId() {
+            return principal.getLocalUserId();
+        }
     }
 }

@@ -1,0 +1,6 @@
+base:
+  auth:
+    email:
+      enabled: true
+      password-enabled: true
+      client-origin: ${EMAIL_AUTH_CLIENT_ORIGIN}

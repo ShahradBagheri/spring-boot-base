@@ -1,5 +1,7 @@
 package com.notshahrad.spring_boot_base.auth.token;
 
+import com.notshahrad.spring_boot_base.auth.AccountSessionValidator;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -25,8 +27,9 @@ public class AccessTokenConfiguration {
     }
 
     @Bean
-    RefreshSessionService refreshSessionService(JdbcTemplate jdbcTemplate, AccessTokenIssuer issuer) {
-        return new RefreshSessionService(new RefreshSessionStore(jdbcTemplate), issuer, Clock.systemUTC());
+    RefreshSessionService refreshSessionService(JdbcTemplate jdbcTemplate, AccessTokenIssuer issuer,
+                                               ObjectProvider<AccountSessionValidator> validators) {
+        return new RefreshSessionService(new RefreshSessionStore(jdbcTemplate), issuer, Clock.systemUTC(), validators);
     }
 
     @Bean

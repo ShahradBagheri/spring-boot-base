@@ -1,5 +1,8 @@
 package com.notshahrad.spring_boot_base.auth.token;
 
+import com.notshahrad.spring_boot_base.auth.AccountRefreshSessionRevoker;
+import com.notshahrad.spring_boot_base.auth.AccountSessionValidator;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +27,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
-public class RefreshSessionService {
+public class RefreshSessionService implements AccountRefreshSessionRevoker {
 
     private static final Duration SESSION_LIFETIME = Duration.ofDays(30);
     private static final Pattern CREDENTIAL = Pattern.compile("[A-Za-z0-9_-]{43}");
@@ -32,17 +35,21 @@ public class RefreshSessionService {
     private final RefreshSessionStore store;
     private final AccessTokenIssuer issuer;
     private final Clock clock;
+    private final ObjectProvider<AccountSessionValidator> validators;
     private final SecureRandom random = new SecureRandom();
 
-    RefreshSessionService(RefreshSessionStore store, AccessTokenIssuer issuer, Clock clock) {
+    RefreshSessionService(RefreshSessionStore store, AccessTokenIssuer issuer, Clock clock,
+                          ObjectProvider<AccountSessionValidator> validators) {
         this.store = store;
         this.issuer = issuer;
         this.clock = clock;
+        this.validators = validators;
     }
 
     public TokenPair issue() {
         var local = issuer.requireLocalAuthentication();
-        if (!store.lockActiveUser(local.userId())) {
+        if (!store.lockActiveUser(local.userId())
+                || !validators.stream().allMatch(validator -> validator.isCurrent(local.principal()))) {
             throw new AccessDeniedException("Token issuance requires an active local account");
         }
 
@@ -90,6 +97,14 @@ public class RefreshSessionService {
         var bearer = requireBearer();
         if (store.lockActiveUser(bearer.userId())) {
             store.revokeAll(bearer.userId(), clock.instant());
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void revokeForAccount(UUID userId) {
+        if (store.lockActiveUser(userId)) {
+            store.revokeAll(userId, clock.instant());
         }
     }
 

@@ -26,7 +26,7 @@ This table is intended for non-secret application settings, not passwords or oth
 
 ## Email login identities
 
-`V5` creates `email_login_identities` with one row per local user and a unique index on verified addresses. Existing OIDC profile emails are left outside the login table. The migration runs regardless of whether the email authentication capability is enabled. See the [email authentication model](EMAIL_AUTHENTICATION_MODEL.md) for the verification policy.
+`V5` creates `email_login_identities` with one row per local user and a unique index on verified addresses. `V6` stores adaptive password hashes, credential versions used to invalidate browser sessions, and short-lived challenge hashes. Existing OIDC profile emails are left outside the login table. The migration runs regardless of whether the email authentication capability is enabled. See the [email authentication model](EMAIL_AUTHENTICATION_MODEL.md) for the verification policy.
 
 ## First startup
 
