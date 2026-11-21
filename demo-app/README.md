@@ -1,6 +1,6 @@
 # Demo Application
 
-The `demo-app` module is the executable Spring Boot application in this Maven reactor. It consumes `base-core` and `base-data-jpa` as regular Maven dependencies.
+The `demo-app` module is the executable Spring Boot application in this Maven reactor. It consumes `base-core`, `base-data-jpa`, `base-web`, and `base-security` as regular Maven dependencies. Removing the optional `base-security` dependency also removes its reusable security baseline; consuming apps should opt in deliberately.
 
 ## Requirements
 
@@ -64,6 +64,8 @@ A healthy application returns a status of `UP`.
 | --- | --- |
 | `base-core` | Shared framework-independent contracts and exceptions |
 | `base-data-jpa` | Reusable JPA mapped superclass and auditing configuration |
+| `base-web` | Shared API response DTOs and MVC exception mapping |
+| `base-security` | Optional Spring Security configuration and authentication/authorization errors |
 | `demo-app` | Application entry point, environment configuration, and executable Spring Boot artifact |
 
 The repository root is a Maven aggregator with `pom` packaging. Application-specific databases, migrations, and runtime configuration belong in `demo-app`.
