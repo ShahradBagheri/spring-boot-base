@@ -7,6 +7,7 @@ The `demo-app` module is the executable Spring Boot application in this Maven re
 - Java 25
 - Maven 3.9 or newer
 - PostgreSQL for the `dev` profile
+- Docker-compatible engine to execute the full Testcontainers integration suite
 
 ## Run locally with PostgreSQL
 
@@ -36,10 +37,16 @@ Spring Boot does not automatically load a `.env` file. If you use one locally, a
 ## Run tests
 
 ```powershell
+mvn clean test
+```
+
+This runs fast unit, MVC and JPA tests with the H2 `test` profile. For the full verification suite, start Docker and run:
+
+```powershell
 mvn clean verify
 ```
 
-The `test` profile uses an in-memory H2 datasource and does not require a running PostgreSQL instance.
+Failsafe runs `*IT` tests against disposable PostgreSQL Testcontainers, applying the real Flyway migrations and checking persistence mappings. A locally installed PostgreSQL server is not required for those integration tests.
 
 ## Check startup
 
@@ -60,3 +67,5 @@ A healthy application returns a status of `UP`.
 | `demo-app` | Application entry point, environment configuration, and executable Spring Boot artifact |
 
 The repository root is a Maven aggregator with `pom` packaging. Application-specific databases, migrations, and runtime configuration belong in `demo-app`.
+
+For a full checklist, consult [development setup](../docs/DEVELOPMENT_SETUP.md). For a new entity, repository, service, controller, validation and tests, consult [feature extension](../docs/EXTENDING.md). Check [the security policy](../docs/SECURITY_POLICY.md) before exposing application routes.
