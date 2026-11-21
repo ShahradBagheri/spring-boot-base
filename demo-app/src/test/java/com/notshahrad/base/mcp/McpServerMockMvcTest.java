@@ -2,13 +2,6 @@ package com.notshahrad.base.mcp;
 
 import com.notshahrad.spring_boot_base.SpringBootBaseApplication;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +13,6 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.convention.TestBean;
@@ -28,11 +20,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.net.URI;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Map;
 
+import static com.notshahrad.base.mcp.McpTestIssuer.ISSUER;
+import static com.notshahrad.base.mcp.McpTestIssuer.RESOURCE;
+import static com.notshahrad.base.mcp.McpTestIssuer.SCOPE;
+import static com.notshahrad.base.mcp.McpTestIssuer.issue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,8 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = SpringBootBaseApplication.class, properties = {
-        "MCP_ISSUER=https://issuer.example",
-        "MCP_RESOURCE=https://api.example/mcp",
+        "MCP_ISSUER=" + ISSUER,
+        "MCP_RESOURCE=" + RESOURCE,
         "base.mcp.server.requests-per-subject=2",
         "spring.ai.mcp.server.streamable-http.mcp-endpoint=/misconfigured"
 })
@@ -52,15 +46,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles({"test", "mcp"})
 class McpServerMockMvcTest {
 
-    private static final String ISSUER = "https://issuer.example";
-    private static final String RESOURCE = "https://api.example/mcp";
-    private static final String SCOPE = "mcp:access";
     private static final String TOOL = "lookup_feature_guide";
     private static final String RESOURCE_URI = "spring-boot-base://guides/index";
     private static final String PROMPT = "plan_feature_integration";
-    private static final RSAKey KEY = signingKey();
 
-    @TestBean(name = "mcpJwtDecoder", enforceOverride = true)
+    @TestBean(name = "mcpJwtDecoder", enforceOverride = true,
+            methodName = "com.notshahrad.base.mcp.McpTestIssuer#decoder")
     private JwtDecoder decoder;
 
     @Autowired
@@ -175,14 +166,14 @@ class McpServerMockMvcTest {
 
     private void assertMcpScope(String method, Map<String, ?> params) throws Exception {
         mvc.perform(rpc(method, params)).andExpect(status().isUnauthorized());
-        String token = sign("limited-client", ISSUER, RESOURCE, "read", Instant.now().plusSeconds(300));
+        String token = issue("limited-client", ISSUER, RESOURCE, "read", Instant.now().plusSeconds(300));
         mvc.perform(rpc(method, params).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
     private MockHttpServletRequestBuilder authorized(String subject, String method, Map<String, ?> params)
             throws JOSEException {
-        String token = sign(subject, ISSUER, RESOURCE, SCOPE, Instant.now().plusSeconds(300));
+        String token = issue(subject, ISSUER, RESOURCE, SCOPE, Instant.now().plusSeconds(300));
         return rpc(method, params).header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
@@ -193,25 +184,9 @@ class McpServerMockMvcTest {
                 .content(json.writeValueAsString(Map.of("jsonrpc", "2.0", "id", 1, "method", method, "params", params)));
     }
 
-    static JwtDecoder decoder() throws JOSEException {
-        var settings = new McpSecurityAutoConfiguration.Properties(URI.create(ISSUER), URI.create(RESOURCE), 2, 1200);
-        return McpSecurityAutoConfiguration.withValidation(
-                NimbusJwtDecoder.withPublicKey(KEY.toRSAPublicKey()).build(), settings);
-    }
-
     private MockHttpServletRequestBuilder bearer(String subject, String issuer, String audience, String scope, Instant expiry)
             throws JOSEException {
-        return initialize().header(HttpHeaders.AUTHORIZATION, "Bearer " + sign(subject, issuer, audience, scope, expiry));
-    }
-
-    private String sign(String subject, String issuer, String audience, String scope, Instant expiry) throws JOSEException {
-        var claims = new JWTClaimsSet.Builder().subject(subject).issuer(issuer).audience(audience).claim("scope", scope);
-        if (expiry != null) {
-            claims.expirationTime(Date.from(expiry));
-        }
-        var jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claims.build());
-        jwt.sign(new RSASSASigner(KEY));
-        return jwt.serialize();
+        return initialize().header(HttpHeaders.AUTHORIZATION, "Bearer " + issue(subject, issuer, audience, scope, expiry));
     }
 
     private MockHttpServletRequestBuilder initialize() {
@@ -222,13 +197,5 @@ class McpServerMockMvcTest {
                           "protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}
                         }}
                         """);
-    }
-
-    private static RSAKey signingKey() {
-        try {
-            return new RSAKeyGenerator(2048).generate();
-        } catch (JOSEException ex) {
-            throw new IllegalStateException("Unable to create an MCP test key", ex);
-        }
     }
 }
