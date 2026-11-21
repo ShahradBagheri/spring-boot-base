@@ -1,16 +1,21 @@
 package com.notshahrad.spring_boot_base.common.entity;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BaseEntityTest {
 
     private static class TestEntity extends BaseEntity {
+    }
+
+    private static class OtherEntity extends BaseEntity {
     }
 
     @Test
@@ -23,6 +28,19 @@ class BaseEntityTest {
         assertNotEquals(second, first);
         assertNotEquals(first, null);
         assertNotEquals(first, new Object());
+    }
+
+    @Test
+    void differentEntityTypesWithSameIdentifierAreNotEqual() {
+        UUID id = UUID.randomUUID();
+        TestEntity first = new TestEntity();
+        OtherEntity second = new OtherEntity();
+
+        ReflectionTestUtils.setField(first, "id", id);
+        ReflectionTestUtils.setField(second, "id", id);
+
+        assertNotEquals(first, second);
+        assertNotEquals(second, first);
     }
 
     @Test
