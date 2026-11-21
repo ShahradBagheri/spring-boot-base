@@ -72,8 +72,18 @@ final class RefreshSessionStore {
                 """, utc(now), userId, utc(now));
     }
 
-    int purgeExpired(Instant now) {
-        return jdbc.update("DELETE FROM refresh_sessions WHERE expires_at <= ?", utc(now));
+    int purgeExpired(Instant now, int batchSize) {
+        if (batchSize < 1) {
+            throw new IllegalArgumentException("Cleanup batch size must be positive");
+        }
+        return jdbc.update("""
+                WITH expired AS (
+                    SELECT id FROM refresh_sessions
+                    WHERE expires_at <= ?
+                    ORDER BY expires_at, id LIMIT ? FOR UPDATE SKIP LOCKED
+                )
+                DELETE FROM refresh_sessions t USING expired e WHERE t.id = e.id
+                """, utc(now), batchSize);
     }
 
     private static OffsetDateTime utc(Instant time) {

@@ -63,9 +63,18 @@ final class PhoneOtpStore {
         }
     }
 
-    int purgeExpired(Instant now) {
-        return jdbc.update("DELETE FROM phone_otp_challenges WHERE expires_at <= ? AND resend_after <= ?",
-                utc(now), utc(now));
+    int purgeExpired(Instant now, int batchSize) {
+        if (batchSize < 1) {
+            throw new IllegalArgumentException("Cleanup batch size must be positive");
+        }
+        return jdbc.update("""
+                WITH expired AS (
+                    SELECT challenge_id FROM phone_otp_challenges
+                    WHERE expires_at <= ? AND resend_after <= ?
+                    ORDER BY expires_at, challenge_id LIMIT ? FOR UPDATE SKIP LOCKED
+                )
+                DELETE FROM phone_otp_challenges t USING expired e WHERE t.challenge_id = e.challenge_id
+                """, utc(now), utc(now), batchSize);
     }
 
     private static OffsetDateTime utc(Instant instant) {

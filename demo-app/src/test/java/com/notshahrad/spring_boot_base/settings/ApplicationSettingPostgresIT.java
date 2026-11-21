@@ -10,6 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.notshahrad.spring_boot_base.auth.phone.PhoneAuthService.PhonePrincipal;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,6 +30,34 @@ class ApplicationSettingPostgresIT extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Test
+    @Transactional
+    void attributesCreationAndUpdateToTheirLocalUsers() {
+        UUID creator = UUID.randomUUID();
+        UUID editor = UUID.randomUUID();
+        try {
+            signIn(creator);
+            var setting = new ApplicationSetting("audit.users", "off");
+            entityManager.persist(setting);
+            entityManager.flush();
+            signIn(editor);
+            setting.updateValue("on");
+            entityManager.flush();
+            entityManager.clear();
+            var updated = entityManager.find(ApplicationSetting.class, setting.getId());
+            assertEquals(creator.toString(), updated.getCreatedBy());
+            assertEquals(editor.toString(), updated.getUpdatedBy());
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    private static void signIn(UUID id) {
+        var context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(new TestingAuthenticationToken(new PhonePrincipal(id), null, "ROLE_USER"));
+        SecurityContextHolder.setContext(context);
+    }
 
     @Test
     @Transactional

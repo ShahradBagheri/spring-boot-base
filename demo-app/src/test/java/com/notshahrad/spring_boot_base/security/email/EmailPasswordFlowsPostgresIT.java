@@ -1,5 +1,7 @@
 package com.notshahrad.spring_boot_base.security.email;
 
+import com.notshahrad.spring_boot_base.auth.email.EmailPasswordService;
+import com.notshahrad.spring_boot_base.auth.email.LoginEmail;
 import com.notshahrad.spring_boot_base.mail.EmailMessage;
 import com.notshahrad.spring_boot_base.mail.EmailSender;
 import com.notshahrad.spring_boot_base.support.AbstractPostgresIntegrationTest;
@@ -79,6 +81,26 @@ class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
     @DynamicPropertySource
     static void tokenKeys(DynamicPropertyRegistry registry) throws Exception {
         TokenTestKeys.register(registry, keyDirectory);
+    }
+
+    @Test
+    void cleanupRemovesAtMostOneExpiredChallengePerBatch(@Autowired EmailPasswordService passwords) {
+        var first = new LoginEmail(UUID.randomUUID() + "@example.test");
+        var second = new LoginEmail(UUID.randomUUID() + "@example.test");
+        var active = new LoginEmail(UUID.randomUUID() + "@example.test");
+        for (var address : java.util.List.of(first, second, active)) {
+            assertTrue(passwords.requestSignup(address).isPresent());
+        }
+        jdbc.update("""
+                UPDATE email_auth_challenges SET expires_at = CURRENT_TIMESTAMP - interval '2 days',
+                    resend_after = CURRENT_TIMESTAMP - interval '3 days' WHERE address IN (?, ?)
+                """, first.value(), second.value());
+
+        assertEquals(1, passwords.purgeExpiredChallenges(1));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM email_auth_challenges WHERE address IN (?, ?)",
+                Integer.class, first.value(), second.value()));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM email_auth_challenges WHERE address = ?",
+                Integer.class, active.value()));
     }
 
     @Test

@@ -180,7 +180,7 @@ Its [POM](../demo-app/pom.xml) has explicit project dependencies managed by the 
 </dependency>
 ```
 
-Its application entry point is `com.notshahrad.spring_boot_base.SpringBootBaseApplication`. The application supplies its own `AuditorAware<String>` bean (currently returning `system`), and imports `JpaAuditingConfiguration` from `base-data-jpa` via `demo-app/src/main/java/com/notshahrad/spring_boot_base/config/JpaConfig.java`. This keeps the auditing policy application-specific.
+Its application entry point is `com.notshahrad.spring_boot_base.SpringBootBaseApplication`. The application supplies its own `AuditorAware<String>` bean (see the [audit policy](BASE-ENTITY-CONTRACT.md)), and imports `JpaAuditingConfiguration` from `base-data-jpa` via `demo-app/src/main/java/com/notshahrad/spring_boot_base/config/JpaConfig.java`. This keeps the auditing policy application-specific.
 
 HTTP exception handlers and shared API DTOs are in `base-web`, not in `demo-app`. Spring Security configuration and 401/403 error mapping are in `base-security`. Both are reusable JARs, never dependencies of `base-core`. The demo application owns controllers and feature-specific DTOs.
 

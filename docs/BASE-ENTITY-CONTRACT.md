@@ -46,7 +46,7 @@ The annotations have no effect unless the consuming application enables auditing
 
 `createdBy` and `updatedBy` describe the actor of a write. They stay nullable because not every write has an identified principal, for example a migration, a scheduled job, or an anonymous request.
 
-The current application returns the constant `system` for every entity through a fixed `AuditorAware` bean. That is a temporary stand-in, owned by the security phase ([#25](https://github.com/ShahradBagheri/spring-boot-base/issues/25)–[#28](https://github.com/ShahradBagheri/spring-boot-base/issues/28)); the replacement supplies the authenticated principal, and `BaseEntity` must not learn about security to do it.
+The demo auditor records the stable local account UUID for authenticated local users, including first-party bearer authentication. It uses `system` when no security context actor is present, `anonymous` for anonymous or unauthenticated requests, and `unattributed` for other authenticated identities.
 
 ### D4 — Optimistic locking through `version`
 

@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-This document is the recommended execution order for the issues in this repository. It is a practical sequence, not a claim that every issue strictly depends on the one before it. Follow the issue descriptions and dependency links when work needs to branch.
+The original implementation roadmap is complete. The phases below record its delivery order. See [open GitHub issues](https://github.com/ShahradBagheri/spring-boot-base/issues?q=is%3Aissue+is%3Aopen) for current work.
 
 ## Working rules
 
@@ -22,8 +22,6 @@ This document is the recommended execution order for the issues in this reposito
 8. [#93 — Document the multi-module structure and extension workflow](https://github.com/ShahradBagheri/spring-boot-base/issues/93)
 
 Initial modules should be only `base-core`, `base-data-jpa`, and `demo-app`. Add optional modules when their features are implemented, rather than creating empty modules in advance.
-
-Status: items 3 to 6 landed as one change. The root `pom.xml` is now a `pom`-packaged aggregator and parent, it holds no source code, and the three child modules inherit the group, version, compiler settings, and managed dependency versions from it. Remaining work for this phase is verification ([#92](https://github.com/ShahradBagheri/spring-boot-base/issues/92)) and documentation ([#93](https://github.com/ShahradBagheri/spring-boot-base/issues/93)).
 
 ## Phase 2 — JPA foundation
 
@@ -127,7 +125,3 @@ MCP belongs in an optional `base-mcp-server` module. Verify compatibility with t
 69. [#29 — Complete the README setup and run instructions](https://github.com/ShahradBagheri/spring-boot-base/issues/29)
 70. [#30 — Document module structure and extension points](https://github.com/ShahradBagheri/spring-boot-base/issues/30)
 71. [#31 — Build a complete vertical-slice example](https://github.com/ShahradBagheri/spring-boot-base/issues/31)
-
-## Immediate next step
-
-The design reviews in [#87](https://github.com/ShahradBagheri/spring-boot-base/issues/87) and [#8](https://github.com/ShahradBagheri/spring-boot-base/issues/8) are recorded in [Module boundaries and dependency rules](MODULE-BOUNDARIES.md) and [BaseEntity contract](BASE-ENTITY-CONTRACT.md). Complete the structural work in [#88](https://github.com/ShahradBagheri/spring-boot-base/issues/88)–[#92](https://github.com/ShahradBagheri/spring-boot-base/issues/92) before moving the existing JPA foundation into its dedicated module.

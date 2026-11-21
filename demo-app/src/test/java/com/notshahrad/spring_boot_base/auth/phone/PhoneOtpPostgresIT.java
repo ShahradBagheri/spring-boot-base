@@ -26,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(properties = {
         "base.auth.phone.enabled=true",
         "base.auth.phone.otp.enabled=true",
-        "base.auth.phone.otp.max-attempts=2"
+        "base.auth.phone.otp.max-attempts=2",
+        "base.auth.cleanup.enabled=true"
 })
 class PhoneOtpPostgresIT extends AbstractPostgresIntegrationTest {
 
@@ -82,14 +83,18 @@ class PhoneOtpPostgresIT extends AbstractPostgresIntegrationTest {
     void expiredChallengesAreRejectedAndCanBePurged() {
         var number = phone("0133");
         var delivery = otp.issue(number, LOGIN).orElseThrow();
+        var second = otp.issue(phone("0135"), LOGIN).orElseThrow();
+        var active = otp.issue(phone("0136"), LOGIN).orElseThrow();
         jdbc.update("""
                 UPDATE phone_otp_challenges SET issued_at = CURRENT_TIMESTAMP - INTERVAL '10 minutes',
                     expires_at = CURRENT_TIMESTAMP - INTERVAL '5 minutes',
                     resend_after = CURRENT_TIMESTAMP - INTERVAL '9 minutes'
-                WHERE challenge_id = ?
-                """, delivery.challengeId());
+                WHERE challenge_id IN (?, ?)
+                """, delivery.challengeId(), second.challengeId());
         assertFalse(otp.verify(number, LOGIN, delivery.challengeId(), delivery.code()));
+        assertEquals(1, otp.purgeExpired(1));
         assertTrue(otp.purgeExpired() >= 1);
+        assertTrue(otp.verify(phone("0136"), LOGIN, active.challengeId(), active.code()));
         assertEquals(0, jdbc.queryForObject("""
                 SELECT COUNT(*) FROM phone_otp_challenges WHERE challenge_id = ?
                 """, Integer.class, delivery.challengeId()));
