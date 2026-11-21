@@ -6,8 +6,11 @@ import com.notshahrad.spring_boot_base.support.AbstractPostgresIntegrationTest;
 import com.notshahrad.spring_boot_base.support.TokenTestKeys;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
@@ -35,12 +38,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,6 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "base.auth.email.client-origin=https://client.example.test"
 })
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 @ActiveProfiles("auth-token")
 class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
 
@@ -76,7 +82,7 @@ class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
     }
 
     @Test
-    void verifiesOwnershipBeforeActivatingPasswordAndCreatesALocalSession() throws Exception {
+    void verifiesOwnershipBeforeActivatingPasswordAndCreatesALocalSession(CapturedOutput output) throws Exception {
         var browser = browser("192.0.2.1");
         http.perform(post(PREFIX + "/signup").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("email", browser.email()))))
@@ -108,6 +114,8 @@ class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
         assertNotEquals(oldId, loggedIn.getId());
         http.perform(get("/api/example/me").session(loggedIn)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").isNotEmpty());
+        assertFalse(output.getAll().contains(ORIGINAL_PASSWORD), "Password reached application logs");
+        assertFalse(output.getAll().contains(challenge), "Signup challenge reached application logs");
     }
 
     @Test
@@ -156,6 +164,47 @@ class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
     }
 
     @Test
+    void resetChallengesExpireAndCannotBeUsedForSignup() throws Exception {
+        var browser = browser("192.0.2.6");
+        redeem(browser, "/verify", requestChallenge(browser, "/signup", "/verify-email"), ORIGINAL_PASSWORD)
+                .andExpect(status().isNoContent());
+        String reset = requestChallenge(browser, "/reset/request", "/reset-password");
+        String storedHash = jdbc.queryForObject("""
+                SELECT token_hash FROM email_auth_challenges WHERE purpose = 'RESET' AND address = ?
+                """, String.class, browser.email());
+        assertEquals(digest(reset), storedHash);
+        redeem(browser, "/verify", reset, NEW_PASSWORD).andExpect(status().isBadRequest());
+
+        jdbc.update("""
+                UPDATE email_auth_challenges SET expires_at = CURRENT_TIMESTAMP - interval '1 minute',
+                    resend_after = CURRENT_TIMESTAMP - interval '2 minutes'
+                WHERE purpose = 'RESET' AND address = ?
+                """, browser.email());
+        redeem(browser, "/reset/complete", reset, NEW_PASSWORD).andExpect(status().isBadRequest());
+        expectLoginRejected(browser, NEW_PASSWORD);
+        login(browser, ORIGINAL_PASSWORD, new MockHttpSession());
+    }
+
+    @Test
+    void signupAndResetAcknowledgementsDoNotRevealAccountState() throws Exception {
+        var existing = browser("192.0.2.7");
+        redeem(existing, "/verify", requestChallenge(existing, "/signup", "/verify-email"), ORIGINAL_PASSWORD)
+                .andExpect(status().isNoContent());
+        var unknown = browser("192.0.2.8");
+
+        assertGenericAcknowledgement(send(existing, "/signup", Map.of("email", existing.email())));
+        assertGenericAcknowledgement(send(unknown, "/reset/request", Map.of("email", unknown.email())));
+        requestChallenge(unknown, "/signup", "/verify-email");
+        requestChallenge(existing, "/reset/request", "/reset-password");
+    }
+
+    private static void assertGenericAcknowledgement(ResultActions response) throws Exception {
+        response.andExpect(status().isAccepted())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
+                .andExpect(content().string(""));
+    }
+
+    @Test
     void loginAttemptsReceiveGenericResponsesAndAreRateLimited() throws Exception {
         var browser = browser("192.0.2.5");
         for (int i = 0; i < 8; i++) {
@@ -166,8 +215,7 @@ class EmailPasswordFlowsPostgresIT extends AbstractPostgresIntegrationTest {
     }
 
     private String requestChallenge(Browser browser, String route, String clientPath) throws Exception {
-        send(browser, route, Map.of("email", browser.email())).andExpect(status().isAccepted())
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")));
+        assertGenericAcknowledgement(send(browser, route, Map.of("email", browser.email())));
         EmailMessage message = mail.poll(8, TimeUnit.SECONDS);
         assertNotNull(message, "Expected a message from the asynchronous delivery worker");
         assertEquals(browser.email(), message.recipient());

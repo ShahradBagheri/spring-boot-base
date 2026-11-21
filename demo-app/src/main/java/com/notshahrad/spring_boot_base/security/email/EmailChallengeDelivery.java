@@ -1,12 +1,17 @@
 package com.notshahrad.spring_boot_base.security.email;
 
+import com.notshahrad.spring_boot_base.auth.email.DefaultEmailChallengeTemplates;
+import com.notshahrad.spring_boot_base.auth.email.EmailChallengeTemplates;
+import com.notshahrad.spring_boot_base.auth.email.EmailChallengeTemplates.Challenge;
 import com.notshahrad.spring_boot_base.auth.email.EmailPasswordService;
 import com.notshahrad.spring_boot_base.auth.email.LoginEmail;
 import com.notshahrad.spring_boot_base.mail.EmailDeliveryException;
 import com.notshahrad.spring_boot_base.mail.EmailMessage;
+import com.notshahrad.spring_boot_base.mail.EmailNotifications;
 import com.notshahrad.spring_boot_base.mail.EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,15 +29,18 @@ class EmailChallengeDelivery {
     private static final Logger log = LoggerFactory.getLogger(EmailChallengeDelivery.class);
 
     private final EmailPasswordService passwords;
-    private final EmailSender sender;
+    private final EmailNotifications notifications;
+    private final EmailChallengeTemplates templates;
     private final TaskExecutor executor;
     private final URI clientOrigin;
 
     EmailChallengeDelivery(EmailPasswordService passwords, EmailSender sender,
+                           ObjectProvider<EmailChallengeTemplates> templates,
                            @Qualifier("emailChallengeExecutor") TaskExecutor executor,
                            @Value("${base.auth.email.client-origin}") String configuredOrigin) {
         this.passwords = passwords;
-        this.sender = sender;
+        this.notifications = new EmailNotifications(sender);
+        this.templates = templates.getIfAvailable(DefaultEmailChallengeTemplates::new);
         this.executor = executor;
         this.clientOrigin = requireOrigin(configuredOrigin);
     }
@@ -49,11 +57,12 @@ class EmailChallengeDelivery {
         try {
             var result = reset ? passwords.requestReset(address) : passwords.requestSignup(address);
             result.ifPresent(delivery -> {
-                String subject = reset ? "Reset your password" : "Verify your email address";
                 String path = reset ? "/reset-password" : "/verify-email";
                 URI link = clientOrigin.resolve(path + "#token=" + delivery.token());
-                sender.send(new EmailMessage(address.value(), subject,
-                        subject + " using this single-use link:\n\n" + link, null));
+                notifications.send(challenge -> {
+                    var content = reset ? templates.passwordReset(challenge) : templates.signup(challenge);
+                    return new EmailMessage(address.value(), content.subject(), content.textBody(), content.htmlBody());
+                }, new Challenge(address, link));
             });
         } catch (EmailDeliveryException ex) {
             log.warn("Email challenge could not be delivered ({})", ex.getReason());

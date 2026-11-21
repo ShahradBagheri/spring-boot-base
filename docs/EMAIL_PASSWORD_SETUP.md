@@ -1,6 +1,6 @@
 # Email and password authentication
 
-The demo uses the same local user IDs for email/password and other authentication methods. Email signup, verification, login, and recovery are opt-in. SMTP delivery can also be used independently for ordinary notifications. See the [account model](EMAIL_AUTHENTICATION_MODEL.md) and the [SMTP delivery guide](SMTP_DELIVERY.md).
+The demo uses the same local user IDs for email/password and other authentication methods. Email signup, verification, login, and recovery are opt-in. SMTP delivery can also be used independently for ordinary notifications. See the [account model](EMAIL_AUTHENTICATION_MODEL.md) and the [email configuration guide](EMAIL_CONFIGURATION.md) for sender options and template customization.
 
 ## Enable the demo
 

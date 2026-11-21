@@ -50,6 +50,7 @@ Run `mvn clean verify` with a Docker-compatible daemon available. Maven Failsafe
 - `FlywayMigrationIT` applies versioned migrations to a fresh temporary PostgreSQL schema, validates the migration history, verifies the schema columns, and confirms a second migration run executes nothing.
 - `ApplicationSettingPostgresIT` starts the real Spring Boot application context with Flyway enabled and Hibernate `ddl-auto=validate`, then checks the migrated schema, inherited auditing and version fields, soft deletion, and the unique key constraint.
 - `RefreshSessionPostgresIT` verifies constraints, hash-only persistence and JDBC logging, rotation, concurrent exchange, cleanup, and owner-scoped revocation with the token profile enabled.
+- `EmailPasswordFlowsPostgresIT` verifies email signup, reset, challenge expiry and reuse, generic acknowledgements, and password and refresh session revocation with a fake email sender.
 
 The integration profile is defined in `demo-app/src/test/resources/application-integration.yaml`. It does not use Hibernate schema generation; Flyway must create all tables.
 

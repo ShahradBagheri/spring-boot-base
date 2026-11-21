@@ -13,8 +13,8 @@ This guide describes the modules that exist in the repository today and how to a
 | `base-auth/` | `com.notshahrad:base-auth:0.0.1-SNAPSHOT` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
 | `base-auth-oauth2/` | `com.notshahrad:base-auth-oauth2:0.0.1-SNAPSHOT` | Optional OAuth2 Client / OIDC authorization-code integration with Google and Apple registrations |
 | `base-auth-token/` | `com.notshahrad:base-auth-token:0.0.1-SNAPSHOT` | Optional first-party access JWT issuance, validation, and signing-key rotation |
-| `base-auth-email/` | `com.notshahrad:base-auth-email:0.0.1-SNAPSHOT` | Optional verified email login identity storage |
-| `base-mail/` | `com.notshahrad:base-mail:0.0.1-SNAPSHOT` | Framework-independent outbound email message and sender contracts |
+| `base-auth-email/` | `com.notshahrad:base-auth-email:0.0.1-SNAPSHOT` | Optional email/password identities, authentication, and challenge templates |
+| `base-mail/` | `com.notshahrad:base-mail:0.0.1-SNAPSHOT` | Framework-independent outbound email contracts, templates, and notification dispatch |
 | `base-mail-smtp/` | `com.notshahrad:base-mail-smtp:0.0.1-SNAPSHOT` | Optional Spring Boot adapter for SMTP delivery |
 | `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
 | `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
@@ -67,7 +67,7 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - `base-auth` depends on `base-data-jpa` for persistent users and external login identity mappings; it does not depend on Spring Security, an OAuth2 Client or `demo-app`. It must only receive identities that have already been validated by a trusted authentication adapter.
 - `base-auth-oauth2` depends on `base-auth` and `base-security`; it adds Spring Security OAuth2 Client only to applications that explicitly depend on this module. The OAuth2 login filter chain is disabled unless `base.auth.oauth2.enabled=true` and suitable client registrations are configured.
 - `base-auth-token` depends on `base-auth` and `base-security`. Its stateless bearer configuration is opt-in and runs on routes selected by the consuming app.
-- `base-auth-email` uses `base-auth` local users and the consuming application's PostgreSQL datasource. `base-mail` can be used independently for outbound notifications.
+- `base-auth-email` uses `base-auth` local users and the consuming application's PostgreSQL datasource. The demo renders challenge content and dispatches it through `base-mail`. `base-mail` can be used independently for outbound notifications.
 - `base-mail-smtp` implements the `base-mail` sending contract. The demo includes the adapter, and delivery is disabled until explicitly enabled.
 - `demo-app` may depend on the library modules it explicitly opts into and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
