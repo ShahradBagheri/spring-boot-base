@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Clock;
@@ -21,6 +22,11 @@ public class AccessTokenConfiguration {
     @Bean
     AccessTokenIssuer accessTokenIssuer(AccessTokenProperties properties, AccessTokenKeys keys) {
         return new AccessTokenIssuer(properties, keys, Clock.systemUTC());
+    }
+
+    @Bean
+    RefreshSessionService refreshSessionService(JdbcTemplate jdbcTemplate, AccessTokenIssuer issuer) {
+        return new RefreshSessionService(new RefreshSessionStore(jdbcTemplate), issuer, Clock.systemUTC());
     }
 
     @Bean

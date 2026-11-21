@@ -1,9 +1,15 @@
 package com.notshahrad.spring_boot_base.security.token;
 
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.notshahrad.spring_boot_base.auth.LocalUserPrincipal;
 import com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer;
+import com.notshahrad.spring_boot_base.support.TokenTestKeys;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -18,10 +24,10 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyPairGenerator;
-import java.util.Base64;
+import java.security.interfaces.RSAPrivateKey;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +46,8 @@ class TokenApiMockMvcTest {
     private static final String TOKEN_ROUTE = "/api/token/me";
     private static final UUID ACCOUNT_ID = UUID.fromString("77fa30b3-fdfd-4e78-991d-06bc68e479e3");
 
+    private static RSAPrivateKey signingKey;
+
     @TempDir
     static Path keyDirectory;
 
@@ -51,16 +59,7 @@ class TokenApiMockMvcTest {
 
     @DynamicPropertySource
     static void tokenEnvironment(DynamicPropertyRegistry registry) throws Exception {
-        var generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048);
-        var keyPair = generator.generateKeyPair();
-        Path privateKey = writeKey("private.pem", "PRIVATE KEY", keyPair.getPrivate().getEncoded());
-        Path publicKey = writeKey("public.pem", "PUBLIC KEY", keyPair.getPublic().getEncoded());
-        registry.add("APP_TOKEN_ISSUER", () -> "https://app.issuer.example");
-        registry.add("APP_TOKEN_AUDIENCE", () -> "demo-api");
-        registry.add("APP_TOKEN_SIGNING_KEY_ID", () -> "test-key");
-        registry.add("APP_TOKEN_PRIVATE_KEY_FILE", privateKey::toString);
-        registry.add("APP_TOKEN_PUBLIC_KEY_FILE", publicKey::toString);
+        signingKey = TokenTestKeys.register(registry, keyDirectory);
     }
 
     @Test
@@ -93,6 +92,39 @@ class TokenApiMockMvcTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"expired", "tampered", "iss", "aud", "token_use"})
+    void invalidSignedBearerGetsTheSameClientSafe401(String invalid) throws Exception {
+        String valid = issueForTestAccount();
+        String token;
+        if (invalid.equals("tampered")) {
+            int signature = valid.lastIndexOf('.') + 1;
+            char replacement = valid.charAt(signature) == 'A' ? 'B' : 'A';
+            token = valid.substring(0, signature) + replacement + valid.substring(signature + 1);
+        } else {
+            var parsed = SignedJWT.parse(valid);
+            var claims = new JWTClaimsSet.Builder(parsed.getJWTClaimsSet());
+            switch (invalid) {
+                case "expired" -> {
+                    Instant now = Instant.now();
+                    claims.issueTime(Date.from(now.minusSeconds(300))).notBeforeTime(Date.from(now.minusSeconds(300)))
+                            .expirationTime(Date.from(now.minusSeconds(60)));
+                }
+                case "aud" -> claims.audience("foreign-api");
+                default -> claims.claim(invalid, "foreign");
+            }
+            var signed = new SignedJWT(parsed.getHeader(), claims.build());
+            signed.sign(new RSASSASigner(signingKey));
+            token = signed.serialize();
+        }
+
+        mockMvc.perform(get(TOKEN_ROUTE).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("Authentication required"))
+                .andExpect(jsonPath("$.exception").doesNotExist());
+    }
+
     @Test
     void validBearerDoesNotOverrideEndpointAuthorization() throws Exception {
         mockMvc.perform(post(TOKEN_ROUTE).header(HttpHeaders.AUTHORIZATION, "Bearer " + issueForTestAccount()))
@@ -123,12 +155,6 @@ class TokenApiMockMvcTest {
         } finally {
             SecurityContextHolder.clearContext();
         }
-    }
-
-    private static Path writeKey(String filename, String kind, byte[] encoded) throws Exception {
-        String body = Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(encoded);
-        return Files.writeString(keyDirectory.resolve(filename),
-                "-----BEGIN " + kind + "-----\n" + body + "\n-----END " + kind + "-----\n");
     }
 
     private record LocalAccount() implements LocalUserPrincipal {

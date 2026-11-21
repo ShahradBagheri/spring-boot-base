@@ -51,7 +51,8 @@ public final class AccessTokenResourceServer {
                 .logout(AbstractHttpConfigurer::disable)
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(unauthorized).accessDeniedHandler(forbidden))
                 .oauth2ResourceServer(resource -> resource
-                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(authentication))
+                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(
+                                token -> new AccessTokenAuthentication(token, authentication.convert(token))))
                         .authenticationEntryPoint(unauthorized)
                         .accessDeniedHandler(forbidden));
     }

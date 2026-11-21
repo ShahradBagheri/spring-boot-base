@@ -10,8 +10,10 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.notshahrad.spring_boot_base.auth.AppUserRepository;
 import com.notshahrad.spring_boot_base.auth.ExternalIdentityRepository;
+import com.notshahrad.spring_boot_base.support.TokenTestKeys;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenRespon
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -43,6 +47,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -66,7 +71,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = "base.auth.oauth2.enabled=true")
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "auth-token"})
 @AutoConfigureMockMvc
 @Transactional
 class OidcLoginConfigurationMockMvcTest {
@@ -76,6 +81,14 @@ class OidcLoginConfigurationMockMvcTest {
     private static final String CLIENT_ID = "test-client";
     private static final String CALLBACK = "/login/oauth2/code/";
     private static final String CURRENT_USER = "/api/example/me";
+
+    @TempDir
+    static Path tokenKeyDirectory;
+
+    @DynamicPropertySource
+    static void accessTokenKeys(DynamicPropertyRegistry registry) throws Exception {
+        TokenTestKeys.register(registry, tokenKeyDirectory);
+    }
 
     @Autowired
     private MockMvc mockMvc;

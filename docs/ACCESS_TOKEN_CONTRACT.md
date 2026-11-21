@@ -16,6 +16,7 @@
 | `exp` | Issue time plus the configured TTL. Default 5 minutes, allowed range 1–900 whole seconds. |
 | `jti` | Random UUID unique to the issued JWT |
 | `token_use` | `access` |
+| `sid` | Refresh-session UUID on tokens issued as part of a token pair. |
 | `scope` | Optional space-delimited application scopes drawn from `allowed-scopes` and granted on the trusted authentication as `APP_SCOPE_<name>` |
 
 Verification allows 30 seconds of clock skew and caps the signed lifetime at 15 minutes. Selected endpoint policies can require `SCOPE_<name>` in Spring Security. The default allowlist is empty. Role claims and external provider scopes confer no API permissions. The JWT contains no email, display name, credentials, or provider tokens. Treat its contents as readable by anyone who obtains it.
@@ -33,9 +34,22 @@ flowchart TD
     valid -->|No| error["JSON 401 or 403"]
 ```
 
-## Refresh contract for the next batch
+## Token pairs and refresh sessions
 
-Refresh credentials will be opaque cryptographically random secrets with at least 256 bits of entropy, an absolute session lifetime, and separate revocable sessions per client or device. They will be stored as hashes and will carry no JWT claims. The planned default refresh-session lifetime is 30 days from session creation. A refresh cannot extend that absolute deadline. The implementation will return the interval and session expiry to clients explicitly.
+The demo exposes the following endpoints when the `auth-token` profile is enabled.
+
+| Endpoint | Authentication and behavior |
+| --- | --- |
+| `POST /api/token/issue` | A fully authenticated local browser session and valid CSRF token. Creates an independent refresh session for the local account. |
+| `POST /api/token/refresh` | JSON body `{"refreshToken":"<opaque-credential>"}`. Rotates the credential and returns a new token pair. |
+| `POST /api/token/logout` | Bearer access JWT. Revokes the session identified by its `sid` claim for the verified subject. |
+| `POST /api/token/logout-all` | Bearer access JWT. Revokes every active refresh session owned by the verified subject. |
+
+Issue and refresh return HTTP 200 with `Cache-Control: no-store` and the JSON fields `accessToken`, `accessExpiresAt`, `refreshToken`, and `refreshExpiresAt`. The expiry fields are UTC timestamps. On refresh, replace the old pair together and serialize refresh requests for each local client session. A duplicate refresh can revoke the family even if the first request already returned its replacement.
+
+Refresh credentials are opaque secrets with 256 bits of entropy. The application persists their SHA-256 digests. Each family lasts 30 days from creation, and rotation keeps the original deadline. Flyway migration V3 creates the two tables in the demo database. Used hashes are retained through family expiration to detect replay. Operators can call `RefreshSessionService.purgeExpired()` periodically to delete expired families and their credential history. Configure transaction management for the same datasource used by Spring JDBC when integrating the service in another application.
+
+Renewed JWTs carry the same subject, configured audience, and session ID. They carry no application scopes. Obtain a new token pair through trusted local authentication when fresh application scope grants are needed.
 
 ```mermaid
 flowchart TD
@@ -47,7 +61,11 @@ flowchart TD
     revoke --> reject
 ```
 
-Issuance, refresh, and revocation HTTP endpoints are tracked in [#129](https://github.com/ShahradBagheri/spring-boot-base/issues/129), [#130](https://github.com/ShahradBagheri/spring-boot-base/issues/130), and [#131](https://github.com/ShahradBagheri/spring-boot-base/issues/131). Logout for token clients will revoke the selected refresh session or all of the user's refresh sessions, as requested. A previously issued access token remains valid until expiry or signing-key retirement. Browser logout ends the existing local session under the [OIDC session contract](OIDC_AUTHENTICATION_MODEL.md#logout-contract).
+An unknown, expired, revoked, or replayed credential receives the same JSON HTTP 401. Replaying a consumed credential from an active family commits revocation of that family. Requests that fail JSON parsing use the application's standard malformed-request response.
+
+Token logout returns HTTP 204 on success, including repeated requests while the access JWT is valid. Current-session logout with a valid JWT that carries no `sid` also returns HTTP 204. The access JWT remains valid until expiry or signing-key retirement. Browser logout ends the local session under the [OIDC session contract](OIDC_AUTHENTICATION_MODEL.md#logout-contract).
+
+The rotation and replay policy follows the approach described in [RFC 9700, section 4.14](https://www.rfc-editor.org/rfc/rfc9700.html#section-4.14).
 
 ## Transport and failures
 
@@ -69,7 +87,7 @@ The demo already wires the chain. Append `auth-token` to the active profiles, su
 | `APP_TOKEN_PRIVATE_KEY_FILE` | Mounted unencrypted PKCS#8 RSA PEM file with `BEGIN PRIVATE KEY` |
 | `APP_TOKEN_PUBLIC_KEY_FILE` | Matching X.509 SubjectPublicKeyInfo PEM file with `BEGIN PUBLIC KEY` |
 
-Configure `base.auth.token.ttl` and `base.auth.token.allowed-scopes` when the defaults are insufficient. The profile sets `base.auth.token.enabled=true`. The demo route is `GET /api/token/me`. It returns the local UUID when supplied a valid bearer JWT. The current batch exposes an issuance service for trusted application code, so enabling the profile by itself gives no HTTP route for obtaining a token.
+Configure `base.auth.token.ttl` and `base.auth.token.allowed-scopes` when the defaults are insufficient. The profile sets `base.auth.token.enabled=true`. The demo route is `GET /api/token/me`. It returns the local UUID when supplied a valid bearer JWT. To issue a pair through HTTP, sign in as a local user and call the session-authorized issue endpoint with the session's CSRF token. The token profile also works with local authentication supplied by a consuming application.
 
 For local development, generate a disposable key pair outside the checkout and configure the resulting absolute paths. For deployments, mount the signing key from secret storage with process-only read access.
 
