@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -42,7 +42,8 @@ assert dependencies["base-data-jpa"].issubset({"base-core"})
 assert dependencies["base-web"] == {"base-core"}
 assert dependencies["base-security"] == {"base-web"}
 assert dependencies["base-auth"] == {"base-data-jpa"}
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth"}
+assert dependencies["base-auth-oauth2"] == {"base-auth", "base-security"}
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2"}
 
 visited = set()
 visiting = set()
@@ -88,5 +89,6 @@ if jars:
         assert any("base-web-" in name for name in names if name.startswith("BOOT-INF/lib/"))
         assert any("base-security-" in name for name in names if name.startswith("BOOT-INF/lib/"))
         assert any("base-auth-" in name for name in names if name.startswith("BOOT-INF/lib/"))
+        assert any("base-auth-oauth2-" in name for name in names if name.startswith("BOOT-INF/lib/"))
 
 print("Maven module isolation and executable packaging verified")
