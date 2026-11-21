@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
 
     @Test
-    void migratesCleanSchemaValidatesAndDoesNotReapplyVersionOne() throws Exception {
+    void migratesAllVersionsValidatesAndDoesNotReapply() throws Exception {
         String schema = "flyway_it_" + UUID.randomUUID().toString().replace("-", "");
 
         Flyway flyway = Flyway.configure()
@@ -29,7 +29,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 .load();
 
         try {
-            assertEquals(1, flyway.migrate().migrationsExecuted);
+            assertEquals(2, flyway.migrate().migrationsExecuted);
             assertTrue(flyway.validateWithResult().validationSuccessful);
             assertEquals(0, flyway.migrate().migrationsExecuted);
 
@@ -53,12 +53,25 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                     ), columns);
                 }
 
+                try (var statement = connection.prepareStatement(
+                        "select table_name from information_schema.tables "
+                                + "where table_schema = ? and table_name in ('app_users', 'external_identities')")) {
+                    statement.setString(1, schema);
+                    Set<String> tables = new HashSet<>();
+                    try (var result = statement.executeQuery()) {
+                        while (result.next()) {
+                            tables.add(result.getString(1));
+                        }
+                    }
+                    assertEquals(Set.of("app_users", "external_identities"), tables);
+                }
+
                 try (var statement = connection.createStatement();
                      var result = statement.executeQuery(
                              "select count(*) from " + schema
-                                     + ".flyway_schema_history where version = '1' and success = true")) {
+                                     + ".flyway_schema_history where version in ('1', '2') and success = true")) {
                     assertTrue(result.next());
-                    assertEquals(1, result.getInt(1));
+                    assertEquals(2, result.getInt(1));
                 }
             }
         } finally {
