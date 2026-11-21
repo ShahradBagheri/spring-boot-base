@@ -1,68 +1,65 @@
-# Optional Google and Apple OpenID Connect login
+# Optional Google and Apple sign-in
 
-The reusable `base-auth-oauth2` module provides a Spring Security OAuth2 Client authorization-code login chain and a local-user adapter. It depends on `base-auth` for local users and `base-security` for the fail-closed baseline.
+`demo-app` includes `base-auth-oauth2`. The OIDC login flow is disabled by default. Start with the [demo database and build instructions](../demo-app/README.md), then add the provider profiles and environment variables below before starting the JAR. Flyway creates the local user and external identity tables in PostgreSQL.
 
-This module is **disabled by default** (`base.auth.oauth2.enabled` is absent/false). No provider credentials or sample real tokens are stored in the repository.
+| Providers | `SPRING_PROFILES_ACTIVE` for local development | Required environment variables |
+| --- | --- | --- |
+| None | `dev` | Database settings only |
+| Google | `dev,oauth2-google` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Apple | `dev,oauth2-apple` | `APPLE_SERVICES_ID`, `APPLE_CLIENT_SECRET` |
+| Both | `dev,oauth2-google,oauth2-apple` | All four provider variables |
 
-The two profile files are independently selectable:
+In a deployment, append the provider profiles to the application's existing active profiles. The provider profiles enable `base.auth.oauth2.enabled` and register only the selected providers.
 
-- `demo-app/src/main/resources/application-oauth2-google.yaml`
-- `demo-app/src/main/resources/application-oauth2-apple.yaml`
+## Google
 
-The profiles add the required Spring Security `ClientRegistration` properties and enable the OIDC login chain. The default app remains protected when neither profile is enabled. Do not activate an OIDC profile without its registration credentials; startup should fail instead of silently accepting anonymous requests.
+1. In Google Cloud, select your project and configure branding and audience in Google Auth Platform. For an external app in testing, add the Google accounts you will use under **Test users**.
+2. Under **Clients**, create an OAuth client of type **Web application**. Under **Authorized redirect URIs**, add the exact callback URL. Use `http://localhost:8080/login/oauth2/code/google` for the demo on the default local port, or `https://app.example.com/login/oauth2/code/google` for an HTTPS deployment. Use the same scheme, host, port, and path when starting sign-in.
+3. Supply the generated client ID as `GOOGLE_CLIENT_ID` and the client secret as `GOOGLE_CLIENT_SECRET`. In IntelliJ, add them to the app's Run configuration. For deployment, inject them from your secrets manager.
+4. Start the application with `dev,oauth2-google` and open `http://localhost:8080/oauth2/authorization/google` in a browser. This registration requests `openid`, `profile`, and `email`.
 
-## Default behavior
+[Google Auth Platform setup](https://support.google.com/cloud/answer/15544987) · [Google OpenID Connect documentation](https://developers.google.com/identity/openid-connect/openid-connect)
 
-Login initiation: `GET /oauth2/authorization/{registrationId}` (for example, `/oauth2/authorization/google`).
+## Apple
 
-Authorization callback: `/login/oauth2/code/{registrationId}`. The provider response must match the registered redirect exactly. Spring Security validates state and exchanges the authorization code over the back channel. OIDC token validation, issuer, audience and subject resolution are delegated to Spring Security's OIDC client.
+1. Enable Sign in with Apple on the primary App ID in Apple Developer. Create or select a **Services ID**, enable Sign in with Apple for it, and associate it with that primary App ID.
+2. Register the website domain in the Services ID configuration and add its exact **Return URL**, for example `https://app.example.com/login/oauth2/code/apple`. Use a registered HTTPS domain for development too. The Apple web callback requires a domain name.
+3. Create a Sign in with Apple key associated with the primary App ID. Record its **Key ID**, your **Team ID**, and the **Services ID**, and keep the downloaded `.p8` file in secure storage.
+4. Generate the client-secret JWT outside the application and sign it with the Apple private key using ES256.
 
-`LocalOidcUserService` is called **after** Spring Security's verified `OidcUserService` and creates or loads a local `AppUser` using issuer + subject, never email alone. The authenticated principal's name becomes the local UUID. Provider ID tokens are **not** treated as application-issued API tokens.
+   | JWT field | Value |
+   | --- | --- |
+   | Header `alg` | `ES256` |
+   | Header `kid` | `<Apple Key ID>` |
+   | `iss` | `<Apple Team ID>` |
+   | `sub` | `<Apple Services ID>` |
+   | `aud` | `https://appleid.apple.com` |
+   | `iat` | Issue time in Unix seconds |
+   | `exp` | Expiration in Unix seconds, at most six months after issuance |
 
-The current successful login redirect is `/`. This is a minimal implementation; applications with a frontend should configure an allowed destination as part of their login UX. The demo app has no real account management UI or default user credentials.
+5. Supply the Services ID as `APPLE_SERVICES_ID` and the signed JWT as `APPLE_CLIENT_SECRET`. Start with `dev,oauth2-apple`. Open `https://app.example.com/oauth2/authorization/apple` on your registered HTTPS host.
 
-## Enable Google login
+The Apple profile sets the session cookie to `Secure; SameSite=None` so the browser sends it on Apple's cross-site `form_post` callback. Use HTTPS for the whole session when the Apple profile is active. Spring Security checks the saved authorization state on the callback, and normal application POST requests still require CSRF protection. If TLS terminates at a reverse proxy, have the proxy strip untrusted forwarding headers and set the original HTTPS scheme and public host. Configure Spring Boot to honor the headers from that proxy, for example with `SERVER_FORWARD_HEADERS_STRATEGY=framework`.
 
-1. In Google Cloud Console, configure the OAuth consent screen and create a **Web application** OAuth client.
-2. Register your application's exact callback URL, e.g. `https://example.com/login/oauth2/code/google`. For local testing, a suitable development origin may be supported by Google's console.
-3. Expose `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as process environment variables. Do not commit them, and do not reuse production secrets in test source files.
-4. Enable the additional Spring profile `oauth2-google` along with the database profile. For example `SPRING_PROFILES_ACTIVE=dev,oauth2-google`.
-5. Open `https://example.com/oauth2/authorization/google` and complete Google sign-in. Verify that login returns to the configured callback and the local user is created once; a returning sign-in must reuse the same issuer/subject identity.
+Apple can send the user's name in the `user` form field on the first authorization. The application maps the account using the verified ID token's issuer and subject. A returning login works without optional profile fields.
 
-The Google registration requests only `openid`, `profile`, and `email` scopes. Email is not an account-link key, even if Google marks it verified.
+[Apple web configuration](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web) · [Apple client-secret creation](https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret)
 
-## Enable Sign in with Apple
+## Secret rotation
 
-1. Configure Sign in with Apple for your web app in Apple Developer, including a **Services ID** tied to a primary App ID and authorized website domain/return URL.
-2. Obtain your Apple **Team ID**, the Services ID used as `client_id`, an Apple private key (`.p8`) and its **Key ID**.
-3. In a secure environment or secrets service, generate the client-secret JWT signed with your Apple private key using **ES256**. The JWT header must include `alg: ES256` and `kid: <Key ID>`; claims must include `iss: <Team ID>`, `sub: <Services ID>`, `aud: https://appleid.apple.com`, `iat`, and `exp` within Apple's validity limits. **Do not store the private key or JWT in Git.**
-4. Supply `APPLE_SERVICES_ID` and the generated `APPLE_CLIENT_SECRET` as environment variables (or through a secured deployment secret injection mechanism), and rotate the secret before its expiration. Team ID, Key ID, and private key are needed only by your external JWT-signing process.
-5. Enable `SPRING_PROFILES_ACTIVE=dev,oauth2-apple`. The exact callback URL should be `https://example.com/login/oauth2/code/apple` and must be registered in the Services ID configuration.
-6. Use HTTPS with session cookies marked `Secure; SameSite=None` for Apple's cross-site `form_post` callback. Ensure reverse proxies forward the original secure scheme/host correctly.
+Keep the Google client secret, Apple signing key, and generated Apple client-secret JWT in a secrets manager or a protected local Run configuration. Keep them out of source control and request logs. The application reads the client secrets at startup. For Apple, schedule JWT creation before expiry, replace `APPLE_CLIENT_SECRET`, and restart or redeploy so the new secret is loaded. Keep the Apple signing key in the signing environment. For Google, provision a replacement in Google Cloud, deploy it, verify sign-in, then retire the old secret.
 
-The Apple authorization resolver requests `response_mode=form_post` for Apple's registration; the callback is exempted from CSRF *only for the OAuth callback path*, while Spring Security still verifies authorization state. Other application POST requests keep CSRF protection.
+## Verify sign-in and logout
 
-Apple may provide a display name only on the first authorization, in its optional `user` form field. The module does **not** require a name or email from that field to authenticate, and it does not treat unverified form data as identity proof. Missing optional profile claims are accepted. A product that wants to retain Apple's first-time name should add an explicit, validated profile-capture feature after successful OIDC verification.
+1. Start from the selected provider's sign-in URL and complete the flow in a browser. The demo redirects to `/`. Open `/api/example/me` on the same host in the same browser to see the local user UUID in the `username` response field.
+2. Sign in again from a fresh browser session with the same provider account and confirm the UUID stays the same. Accounts authenticated by different issuers stay separate even when they share a verified email.
+3. Deny consent in a fresh session and confirm the callback returns a generic HTTP 401 and the protected endpoint stays inaccessible.
+4. From a signed-in client, send `POST /logout` with the session's Spring Security CSRF token in the `X-CSRF-TOKEN` header or `_csrf` form field. A successful logout returns HTTP 204, invalidates the local session, and expires the session cookie. The next request to `/api/example/me` returns HTTP 401. A browser frontend must render or expose the CSRF token to its own same-origin client. Google and Apple can retain their own provider sessions.
 
-Do not expect Apple to support insecure localhost callbacks for a web Services ID. Test on an HTTPS domain with an approved Apple return URL.
+The automated flow uses test registrations, locally signed ID tokens, and a stubbed code exchange. Run it without provider credentials or external provider calls:
 
-## Independent provider selection
+```sh
+mvn -pl demo-app -am -Dtest=OidcLoginConfigurationMockMvcTest -Dsurefire.failIfNoSpecifiedTests=false test
+```
 
-- `dev,oauth2-google`: Google only.
-- `dev,oauth2-apple`: Apple only.
-- `dev,oauth2-google,oauth2-apple`: both, each with its own credentials.
-- `dev`: no OAuth2 login endpoint enabled; the normal `base-security` policy remains active.
-
-Google and Apple registrations are optional; no default security endpoint is made globally public. The baseline continues to return JSON `ApiError` 401/403 responses for unpermitted application access.
-
-## Automated tests and real-provider verification
-
-`LocalOidcUserServiceTest` verifies that a verified OIDC subject is mapped to a local UUID, including missing optional email and name. `OidcLoginConfigurationMockMvcTest` initiates an authorization redirect using a local dummy client registration and verifies that unrelated API paths remain protected. Tests do not need real provider credentials or network access.
-
-A real Google/Apple sign-in cannot be confirmed without the respective developer registrations, valid callback domains, HTTPS/cookie configuration and live secrets. **Live provider authorization-code callbacks have not been verified by this automated suite.** Before releasing either provider, manually validate first login, returning login, denied consent, invalid/expired state, logout, and the account-linking policy. Issue #39 tracks fuller provider-neutral OIDC integration coverage.
-
-## Operational limitations
-
-The `APPLE_CLIENT_SECRET` value is supplied externally and is **not automatically regenerated or refreshed by the current implementation**. Deployments must rotate it securely before expiration. Full first-time Apple display-name capture, multi-instance session storage, production logout UX and comprehensive OIDC integration tests are separate follow-up concerns.
-
-Read [OIDC authentication model](OIDC_AUTHENTICATION_MODEL.md) and [local identity architecture](LOCAL_IDENTITIES.md) before enabling login in an application.
+Use the browser steps above to verify the live registrations, callback URLs, and cookies in each deployment. See the [OIDC authentication model](OIDC_AUTHENTICATION_MODEL.md) and [local identity architecture](LOCAL_IDENTITIES.md) for the session and account-linking contracts.

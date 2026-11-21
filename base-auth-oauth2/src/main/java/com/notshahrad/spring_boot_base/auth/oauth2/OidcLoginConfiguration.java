@@ -2,15 +2,20 @@ package com.notshahrad.spring_boot_base.auth.oauth2;
 
 import com.notshahrad.spring_boot_base.auth.OidcIdentityService;
 import com.notshahrad.spring_boot_base.common.response.ApiError;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration(proxyBeanMethods = false)
@@ -28,12 +33,23 @@ public class OidcLoginConfiguration {
             HttpSecurity http,
             ClientRegistrationRepository registrations,
             LocalOidcUserService localOidcUserService,
-            JsonMapper jsonMapper) throws Exception {
+            JsonMapper jsonMapper,
+            @Value("${server.servlet.session.cookie.name:JSESSIONID}") String sessionCookieName) throws Exception {
+
+        var paths = PathPatternRequestMatcher.withDefaults();
+        var logoutRequest = paths.matcher(HttpMethod.POST, "/logout");
 
         return http
-                .securityMatcher("/oauth2/authorization/**", "/login/oauth2/code/**")
+                .securityMatcher(new OrRequestMatcher(
+                        paths.matcher("/oauth2/authorization/**"),
+                        paths.matcher("/login/oauth2/code/**"),
+                        logoutRequest))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/login/oauth2/code/**"))
+                .logout(logout -> logout
+                        .logoutRequestMatcher(logoutRequest)
+                        .deleteCookies(sessionCookieName)
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
                 .oauth2Login(login -> login
                         .authorizationEndpoint(endpoint -> endpoint
                                 .authorizationRequestResolver(new AppleAuthorizationRequestResolver(registrations)))
