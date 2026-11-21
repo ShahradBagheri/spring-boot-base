@@ -152,6 +152,38 @@ class BaseEntityPersistenceIntegrationTest {
 
     @Test
     @Transactional
+    void timestampsAreGeneratedAndModificationTimeAdvancesAfterAnUpdate() throws InterruptedException {
+        TestRecord record = new TestRecord();
+
+        assertNull(record.getCreatedAt());
+        assertNull(record.getUpdatedAt());
+
+        entityManager.persist(record);
+        entityManager.flush();
+
+        UUID id = record.getId();
+        entityManager.clear();
+
+        TestRecord created = entityManager.find(TestRecord.class, id);
+        var originalCreatedAt = created.getCreatedAt();
+        var originalUpdatedAt = created.getUpdatedAt();
+
+        assertNotNull(originalCreatedAt);
+        assertNotNull(originalUpdatedAt);
+
+        Thread.sleep(20);
+        created.softDelete("integration-test");
+        entityManager.flush();
+        entityManager.clear();
+
+        TestRecord updated = entityManager.find(TestRecord.class, id);
+
+        assertEquals(originalCreatedAt, updated.getCreatedAt());
+        assertTrue(updated.getUpdatedAt().isAfter(originalUpdatedAt));
+    }
+
+    @Test
+    @Transactional
     void updatesLastModifiedAuditFieldsWithoutChangingCreationAudit() {
         TestRecord record = new TestRecord();
         entityManager.persist(record);
