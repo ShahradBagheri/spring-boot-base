@@ -88,7 +88,7 @@ All commands are executed from the repository root with Java 25 and Maven 3.9+.
 
 The verification script checks JAR packaging when a packaged demo JAR is present. Run it after `mvn clean package` for both structural and packaged-output checks. Automated verification is configured in [GitHub Actions](../.github/workflows/maven-reactor.yml).
 
-The `base-data-jpa` module owns its persistence tests and includes H2 in test scope. `demo-app` also uses the `test` profile with H2 for Spring context tests; it does not require a local PostgreSQL server for the standard Maven test phase.
+The `base-data-jpa` module owns its persistence tests and includes H2 in test scope. `demo-app` uses the `test` profile with H2 for fast Spring context, MVC and JPA tests. Classes named `*IT` in `demo-app` run with Maven Failsafe during `verify`, starting PostgreSQL via Testcontainers. Full `verify` and `install` require Docker; `mvn clean test` does not.
 
 ## Run demo-app
 
@@ -109,9 +109,9 @@ Environment variables read by the development application profile:
 | `DB_USERNAME` | PostgreSQL username | Required for `dev` |
 | `DB_PASSWORD` | PostgreSQL password | Required for `dev` |
 
-The profile files are at `demo-app/src/main/resources/application*.yaml`, and test datasource configuration is in `demo-app/src/test/resources/application-test.yaml`. Database connection details and any future Flyway migrations belong in the application, not `base-core` or `base-data-jpa`.
+The profile files are at `demo-app/src/main/resources/application*.yaml`, and test datasource configuration is in `demo-app/src/test/resources/application-test.yaml`. Database connection details and versioned Flyway migrations belong in the application, not `base-core` or `base-data-jpa`.
 
-The current `dev` profile uses Hibernate `ddl-auto: validate`. Flyway is a planned feature, not yet present. See [demo-app README](../demo-app/README.md) for a PowerShell startup example.
+The current `dev` profile uses Flyway to apply versioned PostgreSQL migrations and Hibernate `ddl-auto: validate` to check the resulting schema. Flyway migrations live under `demo-app/src/main/resources/db/migration`. See the [database migration guide](DB_MIGRATIONS.md) and [demo-app README](../demo-app/README.md) for startup details.
 
 ## How demo-app consumes the libraries
 
@@ -131,6 +131,8 @@ Its [POM](../demo-app/pom.xml) has explicit project dependencies managed by the 
 Its application entry point is `com.notshahrad.spring_boot_base.SpringBootBaseApplication`. The application supplies its own `AuditorAware<String>` bean (currently returning `system`), and imports `JpaAuditingConfiguration` from `base-data-jpa` via `demo-app/src/main/java/com/notshahrad/spring_boot_base/config/JpaConfig.java`. This keeps the auditing policy application-specific.
 
 The application module also owns its HTTP exception handler and response DTOs. Those web-layer types must not be moved into the framework-independent `base-core` module.
+
+The [feature extension guide](EXTENDING.md) explains where to put new entities, repositories, services, request/response records, controllers, validation rules and tests. Shared web and security configuration stays in `demo-app`; the documented [security policy](SECURITY_POLICY.md) defines access expectations for new HTTP endpoints.
 
 ## Consume the libraries from another Maven project
 
@@ -174,11 +176,11 @@ Do not create a placeholder module until its functionality is ready. When adding
 
 For example, a planned `base-security` module may depend on `base-core` and Spring Security, while `base-core` must never acquire a dependency on `base-security`. An application can choose to add `base-security` separately.
 
-## Planned capabilities (not existing modules)
+## Planned optional modules and capabilities
 
 | Planned concern | Likely responsibility |
 | --- | --- |
-| Spring Security foundation | Optional security configuration and authorization policy |
+| Reusable security module | Potential extraction of application security baseline and authorization policy |
 | Google / Apple OIDC sign-in | Optional OAuth2/OIDC identity integration and account linking |
 | Email/password login and outbound email | Account credentials, verification, recovery and configurable email delivery |
 | Phone-number login | Phone normalization, OTP lifecycle and SMS integration |

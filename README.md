@@ -19,9 +19,9 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation built as a single Maven multi-
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
 
-See [module architecture and extension guide](docs/MODULES.md) for dependency rules, module-specific builds, adding optional modules, and consuming the libraries from another project.
+Start with the [developer setup guide](docs/DEVELOPMENT_SETUP.md) for Java 25, Maven, PostgreSQL, Docker, and troubleshooting. See [module architecture](docs/MODULES.md) for dependency boundaries and [adding a feature](docs/EXTENDING.md) for entities, repositories, services, controllers, validation, and tests.
 
-See [API error response contract](docs/API_ERRORS.md) for the planned public JSON error shape and its current integration status.
+See the [API error response contract](docs/API_ERRORS.md) for the public JSON error shape, and the [security policy](docs/SECURITY_POLICY.md) for endpoint access rules and authentication limitations.
 
 ## Build and test from a fresh checkout
 
@@ -71,8 +71,6 @@ See [demo-app instructions](demo-app/README.md) for further runtime details.
 
 ## Project status
 
-The three modules above exist today. Optional security, sign-in, email, phone, guest-user and MCP integrations are planned features, **not installed modules**. Each should be introduced only when it has an implementation and tests; the base libraries must not depend on optional integrations.
-
-The [default security policy](docs/SECURITY_POLICY.md) is now selected for future implementation, but it is **not enforced yet**. Do not expose this demo application to untrusted clients until the Spring Security baseline is implemented and tested.
+The three modules above exist today. Core exceptions, JPA mapping, Flyway database migrations, Testcontainers integration testing, and API error contracts are implemented. Check the [security policy](docs/SECURITY_POLICY.md) for the current security baseline and limitations; sign-in, Google/Apple OIDC, outbound email, phone-based login, guest identities, and MCP integrations remain separate planned features. Do not treat test authentication as a working production login mechanism.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).
