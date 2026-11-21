@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -44,7 +44,9 @@ assert dependencies["base-security"] == {"base-web"}
 assert dependencies["base-auth"] == {"base-data-jpa"}
 assert dependencies["base-auth-oauth2"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-token"] == {"base-auth", "base-security"}
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token"}
+assert dependencies["base-auth-email"] == {"base-auth"}
+assert dependencies["base-mail"] == set()
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email"}
 
 visited = set()
 visiting = set()

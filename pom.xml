@@ -28,6 +28,8 @@
         <module>base-auth</module>
         <module>base-auth-oauth2</module>
         <module>base-auth-token</module>
+        <module>base-auth-email</module>
+        <module>base-mail</module>
         <module>demo-app</module>
     </modules>
 
@@ -70,6 +72,16 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth-token</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-email</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
