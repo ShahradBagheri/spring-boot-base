@@ -1,6 +1,6 @@
 # API error response contract
 
-`ApiError` is the standard error response model defined in `demo-app/src/main/java/com/notshahrad/spring_boot_base/common/response/ApiError.java`. It is an immutable Java record for public API errors.
+`ApiError` is the standard error response model defined in `base-web/src/main/java/com/notshahrad/spring_boot_base/common/response/ApiError.java`. It is an immutable Java record for public API errors. The `base-web` JAR owns the reusable `GlobalExceptionHandler`; the `base-security` JAR consumes `ApiError` without depending on `demo-app`.
 
 ## JSON shape
 
