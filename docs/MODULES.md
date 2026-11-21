@@ -43,6 +43,23 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 
 Both methods are final in `BaseEntity` to preserve the equality contract for subclasses. Do not add Lombok `@EqualsAndHashCode` or override either method in entity subclasses. A constant hash per entity class is a deliberate tradeoff: it avoids mutable hash codes, though many entities of one type will share a hash bucket.
 
+## BaseEntity soft deletion
+
+Soft deletion is an **opt-in state transition**, not automatic row filtering or a replacement for JPA repository deletion. Every entity extending `BaseEntity` inherits the `deleted`, `deletedAt`, and `deletedBy` fields.
+
+- New entities start with `deleted = false` and null deletion metadata.
+- Calling `softDelete(actor)` changes `deleted` to `true`, records the current `Instant` and the supplied actor, and persists those changes when the managed entity is flushed. The actor must be non-null, non-blank, and at most 100 Unicode code points.
+- Calling `softDelete(actor)` again on an already deleted entity preserves its original deletion timestamp and actor, after validating the new argument.
+- Calling `restore()` reactivates the entity and clears `deletedAt` and `deletedBy`; calling it on an active entity is a no-op.
+- These methods do not call `EntityManager.remove()` or a repository delete method. They do not automatically save a detached entity; callers are responsible for appropriate transaction boundaries and persistence.
+- **No global Hibernate or Spring Data filter is configured.** `EntityManager.find()`, unfiltered JPQL and ordinary `findAll()` queries can return soft-deleted rows. Queries that need only active records must explicitly filter by `deleted = false`; administrative queries can filter by `deleted = true` or omit the predicate to include both.
+
+For example, a consuming Spring Data repository may declare `List<MyEntity> findByDeletedFalse()` and `List<MyEntity> findByDeletedTrue()`. With JPQL, use `where e.deleted = false` for active records. This filter applies only to queries that explicitly include it; `findById()` still retrieves deleted rows when their identifier exists.
+
+A standard `JpaRepository.delete()` or `deleteById()` is **not** intercepted by `BaseEntity` and can physically delete rows. Applications should expose dedicated soft-delete operations when that policy is required. Automatic filtering, interception of physical deletes, and deleted-row access control are deliberately deferred to a later implementation, not implied by this base class.
+
+Persistence and query behavior are exercised by `BaseEntityPersistenceIntegrationTest` with H2, including the visibility of deleted rows, explicit active/deleted queries, idempotent deletion, and restoration.
+
 ## Build and test
 
 All commands are executed from the repository root with Java 25 and Maven 3.9+.
