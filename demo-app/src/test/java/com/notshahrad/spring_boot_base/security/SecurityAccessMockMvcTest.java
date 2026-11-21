@@ -36,7 +36,7 @@ class SecurityAccessMockMvcTest {
     void defaultConfigurationHasNoTokenIssuerOrTokenEndpoint() {
         assertTrue(context.getBeansOfType(AccessTokenIssuer.class).isEmpty());
         assertTrue(requestMappingHandlerMapping.getHandlerMethods().keySet().stream()
-                .noneMatch(mapping -> mapping.getPatternValues().contains("/api/token/me")));
+                .noneMatch(mapping -> mapping.getPatternValues().stream().anyMatch(path -> path.startsWith("/api/token/"))));
     }
 
     @Test

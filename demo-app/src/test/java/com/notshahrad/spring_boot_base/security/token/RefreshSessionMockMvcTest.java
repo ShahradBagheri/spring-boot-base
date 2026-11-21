@@ -79,6 +79,21 @@ class RefreshSessionMockMvcTest {
     }
 
     @Test
+    void browserCanFetchACsrfTokenAndUseItToIssueAPair() throws Exception {
+        var local = account();
+        var browser = browserSession(local);
+        http.perform(get("/api/token/csrf")).andExpect(status().isUnauthorized());
+        JsonNode csrf = json.readTree(http.perform(get("/api/token/csrf").session(browser))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
+                .andReturn().getResponse().getContentAsString());
+        JsonNode pair = json.readTree(http.perform(post("/api/token/issue").session(browser)
+                        .header(csrf.get("headerName").asString(), csrf.get("token").asString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertSubject(pair, local);
+    }
+
+    @Test
     void rotatesOnceAndReuseRevokesOnlyThatSession() throws Exception {
         var local = account();
         JsonNode first = issue(local);
