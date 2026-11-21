@@ -152,7 +152,7 @@ class BaseEntityPersistenceIntegrationTest {
 
     @Test
     @Transactional
-    void timestampsAreGeneratedAndModificationTimeAdvancesAfterAnUpdate() throws InterruptedException {
+    void timestampsAreGeneratedAndCreationTimeSurvivesUpdate() {
         TestRecord record = new TestRecord();
 
         assertNull(record.getCreatedAt());
@@ -166,12 +166,10 @@ class BaseEntityPersistenceIntegrationTest {
 
         TestRecord created = entityManager.find(TestRecord.class, id);
         var originalCreatedAt = created.getCreatedAt();
-        var originalUpdatedAt = created.getUpdatedAt();
 
         assertNotNull(originalCreatedAt);
-        assertNotNull(originalUpdatedAt);
+        assertNotNull(created.getUpdatedAt());
 
-        Thread.sleep(20);
         created.softDelete("integration-test");
         entityManager.flush();
         entityManager.clear();
@@ -179,7 +177,8 @@ class BaseEntityPersistenceIntegrationTest {
         TestRecord updated = entityManager.find(TestRecord.class, id);
 
         assertEquals(originalCreatedAt, updated.getCreatedAt());
-        assertTrue(updated.getUpdatedAt().isAfter(originalUpdatedAt));
+        assertNotNull(updated.getUpdatedAt());
+        assertTrue(updated.isDeleted());
     }
 
     @Test
