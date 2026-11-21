@@ -8,10 +8,6 @@ import org.springframework.data.domain.AuditorAware;
 
 import java.util.Optional;
 
-/**
- * Application-specific auditor identity. The reusable auditing configuration
- * is provided by base-data-jpa rather than duplicated in the application.
- */
 @Configuration(proxyBeanMethods = false)
 @Import(JpaAuditingConfiguration.class)
 public class JpaConfig {
