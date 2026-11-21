@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer.ACCESS;
 import static com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer.SCOPE;
+import static com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer.SESSION_ID;
 import static com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer.TOKEN_TYPE;
 import static com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer.TOKEN_USE;
 
@@ -51,7 +52,8 @@ final class AccessTokenDecoder {
                 || !List.of(properties.audience()).equals(claims.get("aud"))
                 || !ACCESS.equals(claims.get(TOKEN_USE))
                 || !canonicalUuid(claims.get("sub"))
-                || !canonicalUuid(claims.get("jti"))) {
+                || !canonicalUuid(claims.get("jti"))
+                || (claims.containsKey(SESSION_ID) && !canonicalUuid(claims.get(SESSION_ID)))) {
             return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
         }
 
