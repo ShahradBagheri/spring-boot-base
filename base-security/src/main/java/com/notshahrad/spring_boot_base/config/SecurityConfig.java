@@ -1,10 +1,13 @@
 package com.notshahrad.spring_boot_base.config;
 
+import com.notshahrad.base.security.web.SecurityExceptionHandler;
+
 import com.notshahrad.spring_boot_base.common.response.ApiError;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Configuration(proxyBeanMethods = false)
+@Import(SecurityExceptionHandler.class)
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
