@@ -24,6 +24,10 @@ This table is intended for non-secret application settings, not passwords or oth
 
 `V3` creates `refresh_sessions` and `refresh_credentials`. `V4` adds a PostgreSQL partial unique index to limit each family to one unused credential while preserving consumed digests for replay detection. It also checks that stored digests use lowercase SHA-256 hex encoding. The migrations run independently of the token profile. See the [token operating guide](TOKEN_OPERATIONS.md#roll-out-and-rotate-keys) for deployment and recovery.
 
+## Email login identities
+
+`V5` creates `email_login_identities` with one row per local user and a unique index on verified addresses. Existing OIDC profile emails are left outside the login table. The migration runs regardless of whether the email authentication capability is enabled. See the [email authentication model](EMAIL_AUTHENTICATION_MODEL.md) for the verification policy.
+
 ## First startup
 
 1. Create a **new, empty PostgreSQL database**, such as `base_project`.

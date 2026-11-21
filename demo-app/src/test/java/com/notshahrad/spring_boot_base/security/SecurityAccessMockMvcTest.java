@@ -1,5 +1,6 @@
 package com.notshahrad.spring_boot_base.security;
 
+import com.notshahrad.spring_boot_base.auth.email.EmailIdentityRepository;
 import com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,11 @@ class SecurityAccessMockMvcTest {
         assertTrue(context.getBeansOfType(AccessTokenIssuer.class).isEmpty());
         assertTrue(requestMappingHandlerMapping.getHandlerMethods().keySet().stream()
                 .noneMatch(mapping -> mapping.getPatternValues().stream().anyMatch(path -> path.startsWith("/api/token/"))));
+    }
+
+    @Test
+    void defaultConfigurationDoesNotEnableEmailIdentityStorage() {
+        assertTrue(context.getBeansOfType(EmailIdentityRepository.class).isEmpty());
     }
 
     @Test
