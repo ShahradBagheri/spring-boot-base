@@ -1,52 +1,62 @@
 # Default Spring Security policy
 
-## Decision
+## Implemented baseline
 
-The runnable `demo-app` will be **secure by default**. Spring Security will be added in issue #26; the policy in this document is the implementation contract for #26–#28.
+The runnable `demo-app` applies a **secure-by-default** Spring Security filter chain in `config/SecurityConfig.java`. Framework-independent `base-core` and `base-data-jpa` do not depend on security.
 
-This is a design decision, not an assertion about the current application. **At the end of issue #25, no Spring Security filter chain is installed and application endpoints are not yet protected by this policy. Do not deploy the current demo app to an untrusted network as though authentication were enforced.**
+The baseline protects all new application routes by default. Only the HTTP `GET` and `HEAD` methods on `/actuator/health` are anonymous. The health endpoint is intended for load balancers and operational checks; avoid exposing privileged health details.
 
-`base-core` and `base-data-jpa` remain independent of Spring Security. A reusable optional `base-security` module may be extracted later, but applications that use the executable template receive a secure-by-default configuration rather than having to opt in to basic protection.
-
-## Public and protected endpoints
-
-| Endpoint or request | Default rule |
+| Request | Default policy |
 | --- | --- |
-| `GET /actuator/health` | Anonymous access, for load balancers and readiness checks |
-| `HEAD /actuator/health` | Anonymous access |
-| Any other actuator endpoint | Authentication required, subject to explicit management endpoint exposure settings |
-| Application routes, including `/api/**` | Authentication required by default |
-| Unknown or newly added routes | Authentication required; never implicitly public |
-| Login, account registration, OAuth2 callbacks, and static content | Not automatically public; add narrowly scoped exceptions only when a relevant feature exists |
+| `GET /actuator/health` and `HEAD /actuator/health` | Public |
+| `GET /api/example/me` | Authenticated |
+| `GET /api/example/admin` | `ROLE_ADMIN` required |
+| All other application and actuator requests | Authenticated |
+| Any newly added route not explicitly matched | Authenticated |
 
-Authentication is only the baseline. Consuming applications must define role, authority, ownership, and resource-level authorization for sensitive actions. An authenticated identity must not by itself grant administrative capabilities.
+The `SecurityExampleController` demonstrates how a controller can use the authenticated principal and how an explicit authority rule protects administrative routes. These endpoints are examples only and do not implement user management.
 
-Health details must not disclose secrets or privileged diagnostics to unauthenticated clients. Only the minimal health status should be public.
+Authenticated access is not necessarily authorized access: services and endpoints with sensitive operations must enforce appropriate role, ownership, tenant, and resource-specific rules.
 
-## Failure responses
+## Security errors
 
-Unauthenticated requests to protected endpoints should receive HTTP **401**. Authenticated users without sufficient permission should receive HTTP **403**. Both responses must use the public `ApiError` JSON contract, with the corresponding status, a safe message, timestamp, and an empty `fieldErrors` map. Internal authentication exceptions, token contents, and other sensitive details must remain server-side.
+Spring Security emits the same `ApiError` structure as `GlobalExceptionHandler` when authentication or authorization fails:
 
-These responses will be implemented and tested in issue #27.
+```json
+{
+  "status": 401,
+  "message": "Authentication required",
+  "timestamp": "2026-11-21T10:00:00Z",
+  "fieldErrors": {}
+}
+```
 
-## Authentication mechanisms and session safety
+A request from an authenticated principal who lacks permission receives HTTP 403 and the message `Access denied`. The JSON contains no stack traces, exception classes, credentials, or internal error messages. These responses originate in the security filter chain rather than the MVC exception handler.
 
-Issue #26 establishes route protection without prematurely selecting application tokens, HTTP Basic authentication, or Google/Apple login. The choice among sessions, application-issued tokens, and other mechanisms remains separate work, especially for OIDC issue #33.
+## Authentication and credentials
 
-Do not ship a default administrator, hardcoded password, or generated credential as an implicit production authentication strategy. Do not treat an external identity provider's ID token as an application authorization token.
+The baseline deliberately **does not** configure a production authentication method or credentials. It disables Spring Security's built-in form login, HTTP Basic, and logout endpoints. It provides an empty `InMemoryUserDetailsManager` only to prevent automatic creation of a default user with a generated password; it is not an application user store.
 
-The CSRF policy must match the selected authentication mechanism: retain CSRF protection for session/cookie-based authenticated state-changing requests; disable it only when an explicitly stateless, non-cookie API design justifies doing so. CORS configuration must use explicit trusted origins rather than `*` with credentials.
+Consequently, real protected endpoints **cannot be accessed by an external user until an application configures an authentication provider or an appropriate sign-in module**. The tests use `@WithMockUser` to simulate authenticated principals. A passing test does not mean Google/Apple sign-in, JWT authentication, or user registration is implemented.
 
-## Extension points
+OAuth2/OIDC, API bearer tokens, password or phone login, and post-login sessions remain independent design decisions in their respective issues.
 
-- Supply application-specific `SecurityFilterChain` rules with explicit route matchers and an appropriate precedence/override mechanism when issue #26 provides the baseline.
-- Define public auth endpoints only when they are implemented and covered by tests.
-- Configure authentication providers, user identity lookup, roles, and authorization policies in consuming applications or optional modules; do not introduce these dependencies into `base-core` or `base-data-jpa`.
-- Preserve the fail-closed fallback when adding new controllers and modules.
-- Keep the `ApiError` mapping consistent between MVC exception handling and security filter-chain failures.
+## CSRF and browser safety
 
-## Acceptance tests for the baseline
+CSRF remains enabled at the Spring Security default; it is not globally disabled merely because the example endpoints return JSON. Any authenticated state-changing HTTP request made with session/cookie-based authentication requires CSRF protection. A consuming application can alter the policy only after selecting and validating its authentication model. Do not enable permissive credentialed CORS.
 
-The security implementation in issues #26–#28 should prove that anonymous health requests succeed, anonymous application requests return 401, authenticated requests to authorized endpoints succeed, and access-denied requests return 403. It should also verify that unexpected new application endpoints are not accidentally public.
+## Customization
 
-Until those tests pass, this document describes the **chosen policy**, not an existing security guarantee.
+`SecurityConfig` provides its baseline `SecurityFilterChain` only when the application has not defined another `SecurityFilterChain`, using `@ConditionalOnMissingBean`. A consuming application can supply its own filter chain with explicit public route and authority matchers. Preserve a fail-closed `anyRequest().authenticated()` fallback, or an even stricter deny-all fallback, and explicitly test added public exceptions.
+
+The empty in-memory `UserDetailsService` is also conditional on a custom `UserDetailsService` being absent. Replace it with the authentication integration appropriate for the application; do not add hardcoded accounts or commit secrets.
+
+Security-filter error handling is defined in `SecurityConfig`; general MVC exception handling lives in `GlobalExceptionHandler`. Both reuse the `ApiError` record but are separate request-processing layers.
+
+## Tests and limitations
+
+`SecurityAccessMockMvcTest` verifies public health access, anonymous 401 errors, protected routes, 403 for a non-admin principal, and authorized access by simulated authenticated users. The existing error-handler MockMvc tests run with test authentication and a CSRF token on POST requests.
+
+Only `GET` and `HEAD` health checks are public. Unknown routes are still authenticated, even when a route would ultimately return 404. This is deliberate to avoid exposing the existence of internal resources to anonymous callers.
+
+Future work includes real authentication providers, role policies for actual application operations, account lifecycle management, and production-ready session or token management. The current baseline is **not a complete authentication system**.
