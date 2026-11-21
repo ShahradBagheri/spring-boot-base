@@ -32,6 +32,17 @@ jobs:
         run: python3 scripts/verify_reactor.py
       - name: Build and test Maven reactor
         run: mvn --batch-mode --no-transfer-progress clean verify
+      - name: Show failing test reports
+        if: failure()
+        run: |
+          find . -path '*/target/surefire-reports/*.txt' -type f -print -exec cat {} \;
+      - name: Upload failing test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'
+          if-no-files-found: ignore
       - name: Verify executable demo artifact
         run: python3 scripts/verify_reactor.py
       - name: Inspect module dependency trees
