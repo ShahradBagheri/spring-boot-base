@@ -44,10 +44,10 @@ Add an optional module when its feature is implemented and has a consumer. An em
 | `base-auth-oauth2` | OAuth2/OIDC sign-in and identity-provider integration. | `base-core`, `base-security` |
 | `base-auth-email` | Email signup, sign-in, verification, and password reset. | `base-core`, `base-security`, `base-mail` |
 | `base-auth-phone` | Phone signup, sign-in, and the OTP lifecycle. | `base-core`, `base-security`, `base-sms` |
-| `base-mcp-server` | MCP tools, resources, prompts, and protocol integration. | `base-core` |
+| `base-mcp-server` | Optional MCP web transport and bearer-token security. Consuming applications register domain capabilities. | None |
 
 The tables list all allowed direct dependencies between project modules. Each edge goes down this order: `demo-app` → authentication modules → JPA, web, security, delivery, and MCP modules → `base-core`. Edges may skip a level, and modules in the same level cannot depend on each other. Since every edge goes down and `base-core` depends on no project module, a cycle cannot form. A library must never depend on `demo-app`.
 
-When features must work together without a listed dependency, wire them through interfaces in `demo-app`. For example, keep provider SDK types behind delivery interfaces, wire the persistence of email or phone identities through application adapters, and apply the application's security policy to the MCP endpoint. Application-specific guest data ownership, account conversion, and cleanup policy also stay in `demo-app`, using security and persistence building blocks as needed.
+When features must work together without a listed dependency, wire them through interfaces in `demo-app`. For example, keep provider SDK types behind delivery interfaces, wire the persistence of email or phone identities through application adapters, and configure the MCP issuer and resource in the application, and apply domain authorization in MCP handlers. Application-specific guest data ownership, account conversion, and cleanup policy also stay in `demo-app`, using security and persistence building blocks as needed.
 
 During the split, verify these rules by inspecting the resolved Maven dependency trees, including transitive dependencies, and checking that each library builds without `demo-app` or the optional modules. The reactor verification belongs to [issue #92](https://github.com/ShahradBagheri/spring-boot-base/issues/92).

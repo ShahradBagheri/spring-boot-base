@@ -33,15 +33,29 @@
         <module>base-mail-smtp</module>
         <module>base-auth-phone</module>
         <module>base-sms</module>
+        <module>base-mcp-server</module>
         <module>demo-app</module>
     </modules>
 
     <properties>
         <java.version>25</java.version>
+        <spring-ai.version>2.0.3</spring-ai.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-mcp-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-core</artifactId>

@@ -16,12 +16,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.ai.mcp.server.enabled=true")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SecurityAccessMockMvcTest {
@@ -59,6 +62,15 @@ class SecurityAccessMockMvcTest {
         assertTrue(requestMappingHandlerMapping.getHandlerMethods().keySet().stream()
                 .noneMatch(mapping -> mapping.getPatternValues().stream().anyMatch(path -> path.startsWith("/api/guest/"))));
         mockMvc.perform(get("/api/guest/csrf")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void defaultConfigurationDoesNotExposeMcpEvenIfStarterIsEnabled() throws Exception {
+        assertFalse(context.containsBean("webMvcStatelessServerRouterFunction"));
+        assertFalse(context.containsBean("mcpSecurityFilterChain"));
+        mockMvc.perform(post("/mcp").with(csrf())).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/.well-known/oauth-protected-resource/mcp")).andExpect(status().isUnauthorized());
     }
 
     @Test

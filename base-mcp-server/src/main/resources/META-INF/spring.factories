@@ -1,0 +1,1 @@
+org.springframework.boot.EnvironmentPostProcessor=com.notshahrad.base.mcp.McpServerEnvironment
