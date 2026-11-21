@@ -29,7 +29,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 .load();
 
         try {
-            assertEquals(3, flyway.migrate().migrationsExecuted);
+            assertEquals(4, flyway.migrate().migrationsExecuted);
             assertTrue(flyway.validateWithResult().validationSuccessful);
             assertEquals(0, flyway.migrate().migrationsExecuted);
 
@@ -69,9 +69,9 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 try (var statement = connection.createStatement();
                      var result = statement.executeQuery(
                              "select count(*) from " + schema
-                                     + ".flyway_schema_history where version in ('1', '2', '3') and success = true")) {
+                                     + ".flyway_schema_history where version in ('1', '2', '3', '4') and success = true")) {
                     assertTrue(result.next());
-                    assertEquals(3, result.getInt(1));
+                    assertEquals(4, result.getInt(1));
                 }
             }
         } finally {

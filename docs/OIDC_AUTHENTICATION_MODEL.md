@@ -57,7 +57,7 @@ Logging out of the application **does not necessarily revoke the external Google
 
 ## Native and third-party API clients
 
-Do not issue first-party JWTs by default as a side effect of social login. A mobile or third-party API consumer that cannot use the application session must explicitly opt into a **separate application-token strategy**. Its access tokens, expiry/refresh rules, audience, scope, storage, revocation, and signing keys must be designed and tested independently.
+Social login establishes a local browser session. Mobile and third-party clients can use the optional first-party bearer flow after local authentication. See the [token operating guide](TOKEN_OPERATIONS.md) for setup, client storage, and recovery, and the [access token contract](ACCESS_TOKEN_CONTRACT.md) for expiry and revocation behavior.
 
 Validating bearer tokens received by an API uses an OAuth2 Resource Server or equivalent token-validation module. OAuth2 Client (external sign-in) and Resource Server (API token validation) must not be conflated.
 

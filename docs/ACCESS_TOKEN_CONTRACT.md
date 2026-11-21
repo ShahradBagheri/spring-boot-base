@@ -36,10 +36,11 @@ flowchart TD
 
 ## Token pairs and refresh sessions
 
-The demo exposes the following endpoints when the `auth-token` profile is enabled.
+The demo exposes the following endpoints when the `auth-token` profile is enabled. See the [operating guide](TOKEN_OPERATIONS.md) for setup and request examples.
 
 | Endpoint | Authentication and behavior |
 | --- | --- |
+| `GET /api/token/csrf` | An authenticated local browser session. Returns the CSRF token and header name with `Cache-Control: no-store`. |
 | `POST /api/token/issue` | A fully authenticated local browser session and valid CSRF token. Creates an independent refresh session for the local account. |
 | `POST /api/token/refresh` | JSON body `{"refreshToken":"<opaque-credential>"}`. Rotates the credential and returns a new token pair. |
 | `POST /api/token/logout` | Bearer access JWT. Revokes the session identified by its `sid` claim for the verified subject. |
@@ -47,7 +48,7 @@ The demo exposes the following endpoints when the `auth-token` profile is enable
 
 Issue and refresh return HTTP 200 with `Cache-Control: no-store` and the JSON fields `accessToken`, `accessExpiresAt`, `refreshToken`, and `refreshExpiresAt`. The expiry fields are UTC timestamps. On refresh, replace the old pair together and serialize refresh requests for each local client session. A duplicate refresh can revoke the family even if the first request already returned its replacement.
 
-Refresh credentials are opaque secrets with 256 bits of entropy. The application persists their SHA-256 digests. Each family lasts 30 days from creation, and rotation keeps the original deadline. Flyway migration V3 creates the two tables in the demo database. Used hashes are retained through family expiration to detect replay. Operators can call `RefreshSessionService.purgeExpired()` periodically to delete expired families and their credential history. Configure transaction management for the same datasource used by Spring JDBC when integrating the service in another application.
+Refresh credentials are opaque secrets with 256 bits of entropy. The application persists their SHA-256 digests. Each family lasts 30 days from creation, and rotation keeps the original deadline. Flyway migration V3 creates the two tables in the demo database, and V4 enforces a single unused credential per family. Used hashes are retained through family expiration to detect replay. Operators can call `RefreshSessionService.purgeExpired()` periodically to delete expired families and their credential history. Configure transaction management for the same datasource used by Spring JDBC when integrating the service in another application.
 
 Renewed JWTs carry the same subject, configured audience, and session ID. They carry no application scopes. Obtain a new token pair through trusted local authentication when fresh application scope grants are needed.
 
@@ -73,34 +74,8 @@ Send the access JWT in the HTTPS `Authorization: Bearer <access-token>` header. 
 
 The bearer chain ignores session cookies. A missing, malformed, invalid, or expired token produces a generic JSON `ApiError` 401 with a `WWW-Authenticate: Bearer` challenge. A verified token that lacks endpoint permission receives JSON 403. Missing or invalid required configuration prevents startup when opt-in is active.
 
-## Enable bearer validation
+## Configuration and operations
 
-Add the `base-auth-token` dependency and ensure the application imports `AccessTokenConfiguration` if its package is outside component scanning. Let the application bind the reusable `AccessTokenResourceServer` configurer to a dedicated ordered `SecurityFilterChain`. Set a narrow `securityMatcher` and explicit endpoint authorization before calling `resourceServer.configure(http).build()`. The configurer sets a stateless bearer-only chain with CSRF disabled for that chain. The application should give it priority over the catch-all browser/session chain.
-
-The demo already wires the chain. Append `auth-token` to the active profiles, such as `dev,auth-token`, and supply the following values through the process environment. For an environment with OIDC login, append the desired provider profile separately.
-
-| Demo environment variable | Purpose |
-| --- | --- |
-| `APP_TOKEN_ISSUER` | A distinct deployment issuer, for example `https://issuer.example` |
-| `APP_TOKEN_AUDIENCE` | Identifier for the API, for example `demo-api` |
-| `APP_TOKEN_SIGNING_KEY_ID` | A unique key ID, for example `access-2026-01`. Allows 1–64 letters, digits, dots, underscores, or hyphens. |
-| `APP_TOKEN_PRIVATE_KEY_FILE` | Mounted unencrypted PKCS#8 RSA PEM file with `BEGIN PRIVATE KEY` |
-| `APP_TOKEN_PUBLIC_KEY_FILE` | Matching X.509 SubjectPublicKeyInfo PEM file with `BEGIN PUBLIC KEY` |
-
-Configure `base.auth.token.ttl` and `base.auth.token.allowed-scopes` when the defaults are insufficient. The profile sets `base.auth.token.enabled=true`. The demo route is `GET /api/token/me`. It returns the local UUID when supplied a valid bearer JWT. To issue a pair through HTTP, sign in as a local user and call the session-authorized issue endpoint with the session's CSRF token. The token profile also works with local authentication supplied by a consuming application.
-
-For local development, generate a disposable key pair outside the checkout and configure the resulting absolute paths. For deployments, mount the signing key from secret storage with process-only read access.
-
-```sh
-umask 077
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /your/secure/path/signer.pem
-openssl pkey -in /your/secure/path/signer.pem -pubout -out /your/secure/path/verifier.pem
-```
-
-## Rotate signing keys
-
-1. Generate a replacement pair with a new `kid`. Distribute the replacement **public** key and ID to intended verifiers through trusted deployment configuration before switching signers. Enable a bounded overlap during rolling deployments.
-2. Switch the active `signing-key-id`, `private-key`, and `public-key` to the new pair. Add the outgoing keys to `base.auth.token.previous-keys` with `key-id`, `public-key` (PEM path), and `verify-until` (UTC timestamp). Set the cutoff to at least the final issuance time plus the old TTL and 30 seconds of clock skew. A configured cutoff can be at most 24 hours ahead at startup. The decoder stops accepting the key at the cutoff without a restart.
-3. Remove expired keys from configuration and retire the old files. For independent verifiers, distribute the same active and outgoing public keys, IDs, issuer, audience, allowed scopes, cutoffs, and validation rules. Verification uses a pinned local `kid` map and ignores token-supplied key locations by rejecting those headers. No public JWKS route is needed for this configuration.
+The [operating guide](TOKEN_OPERATIONS.md) covers enabling and disabling the module, client storage, migration rollout, signing-key rotation, and incident recovery.
 
 The JOSE token type follows the `at+jwt` convention described in [RFC 9068](https://www.rfc-editor.org/rfc/rfc9068.html). This application's claim contract is specified above.

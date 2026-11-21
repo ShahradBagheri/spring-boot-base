@@ -20,13 +20,17 @@ Migration `V1__create_application_settings.sql` creates `application_settings`, 
 
 This table is intended for non-secret application settings, not passwords or other credentials. The entity is a minimal persistence example; it does not expose API endpoints or establish a global configuration service.
 
+## Refresh-token schema
+
+`V3` creates `refresh_sessions` and `refresh_credentials`. `V4` adds a PostgreSQL partial unique index to limit each family to one unused credential while preserving consumed digests for replay detection. It also checks that stored digests use lowercase SHA-256 hex encoding. The migrations run independently of the token profile. See the [token operating guide](TOKEN_OPERATIONS.md#roll-out-and-rotate-keys) for deployment and recovery.
+
 ## First startup
 
 1. Create a **new, empty PostgreSQL database**, such as `base_project`.
 2. Set `SPRING_PROFILES_ACTIVE=dev`, `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` for the database.
 3. Run `mvn clean package` and then `java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar`.
-4. Flyway creates its schema history table, runs `V1`, and records the successful migration. Hibernate validates the resulting schema.
-5. On subsequent startups, Flyway verifies the migration history but does not execute `V1` again.
+4. Flyway creates its schema history table, applies all pending migrations in order, and records each successful migration. Hibernate validates the resulting schema.
+5. On subsequent startups, Flyway verifies the migration history but skips migrations that have already run.
 
 For existing databases containing manually managed tables, do not blindly enable automatic baselining. First inventory and reconcile their schema and migration history, and plan an explicit baseline or new database migration.
 
@@ -41,6 +45,7 @@ Run `mvn clean verify` with a Docker-compatible daemon available. Maven Failsafe
 - `PostgresContainerSmokeIT` checks container startup and JDBC connectivity.
 - `FlywayMigrationIT` applies versioned migrations to a fresh temporary PostgreSQL schema, validates the migration history, verifies the schema columns, and confirms a second migration run executes nothing.
 - `ApplicationSettingPostgresIT` starts the real Spring Boot application context with Flyway enabled and Hibernate `ddl-auto=validate`, then checks the migrated schema, inherited auditing and version fields, soft deletion, and the unique key constraint.
+- `RefreshSessionPostgresIT` verifies constraints, hash-only persistence and JDBC logging, rotation, concurrent exchange, cleanup, and owner-scoped revocation with the token profile enabled.
 
 The integration profile is defined in `demo-app/src/test/resources/application-integration.yaml`. It does not use Hibernate schema generation; Flyway must create all tables.
 

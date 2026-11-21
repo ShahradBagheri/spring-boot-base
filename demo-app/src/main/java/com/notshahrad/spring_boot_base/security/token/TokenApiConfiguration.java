@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +35,9 @@ public class TokenApiConfiguration {
         var paths = PathPatternRequestMatcher.withDefaults();
         var tokenRoutes = paths.matcher("/api/token/**");
         var issueRoute = paths.matcher(HttpMethod.POST, "/api/token/issue");
-        http.securityMatcher(request -> tokenRoutes.matches(request) && !issueRoute.matches(request))
+        var csrfRoute = paths.matcher(HttpMethod.GET, "/api/token/csrf");
+        http.securityMatcher(request -> tokenRoutes.matches(request)
+                        && !issueRoute.matches(request) && !csrfRoute.matches(request))
                 .authorizeHttpRequests(routes -> routes
                         .requestMatchers(HttpMethod.GET, "/api/token/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/token/refresh").permitAll()
@@ -56,6 +59,11 @@ public class TokenApiConfiguration {
         @GetMapping("/api/token/me")
         Map<String, String> currentUser(Principal principal) {
             return Map.of("userId", principal.getName());
+        }
+
+        @GetMapping("/api/token/csrf")
+        ResponseEntity<CsrfToken> csrf(CsrfToken token) {
+            return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(token);
         }
 
         @PostMapping("/api/token/issue")
