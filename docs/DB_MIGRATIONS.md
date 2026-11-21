@@ -32,10 +32,18 @@ For existing databases containing manually managed tables, do not blindly enable
 
 ## Testing
 
-The regular `test` profile uses H2 with Hibernate `create-drop`, and disables Flyway to keep focused JPA tests independent of PostgreSQL-specific SQL.
+The fast `test` profile uses H2 and Hibernate `create-drop`, and disables Flyway for unit, HTTP, and focused JPA tests. `mvn test` runs those tests without Docker.
 
-`FlywayPostgresMigrationTest` runs only when `FLYWAY_TEST_JDBC_URL` points to PostgreSQL. It creates a uniquely named temporary schema, runs the real versioned migration, verifies the columns and schema history, calls `migrate()` again to confirm there are no pending migrations, and drops the temporary schema. GitHub Actions supplies a PostgreSQL service and runs this test during `mvn clean verify`.
+PostgreSQL integration tests use Testcontainers 2.x, the real PostgreSQL 17 engine, and the `integration` profile. `AbstractPostgresIntegrationTest` starts a reusable container and supplies its JDBC URL, username, and password through `@DynamicPropertySource`. No developer database, credentials, or `FLYWAY_TEST_*` environment variables are required.
 
-The CI startup smoke test also starts the real application using the PostgreSQL service and `ddl-auto=validate`, exercising Flyway startup and matching Hibernate entity mappings against the migrated schema.
+Run `mvn clean verify` with a Docker-compatible daemon available. Maven Failsafe runs classes ending in `IT` during the `integration-test` and `verify` phases; a broken migration fails the build.
 
-If running the PostgreSQL migration test yourself, provide `FLYWAY_TEST_JDBC_URL`, `FLYWAY_TEST_USERNAME`, and `FLYWAY_TEST_PASSWORD` pointing to an accessible PostgreSQL database where the user may create and drop test schemas.
+- `PostgresContainerSmokeIT` checks container startup and JDBC connectivity.
+- `FlywayMigrationIT` applies versioned migrations to a fresh temporary PostgreSQL schema, validates the migration history, verifies the schema columns, and confirms a second migration run executes nothing.
+- `ApplicationSettingPostgresIT` starts the real Spring Boot application context with Flyway enabled and Hibernate `ddl-auto=validate`, then checks the migrated schema, inherited auditing and version fields, soft deletion, and the unique key constraint.
+
+The integration profile is defined in `demo-app/src/test/resources/application-integration.yaml`. It does not use Hibernate schema generation; Flyway must create all tables.
+
+The GitHub Actions workflow runs `mvn clean verify` with Docker available and separately smoke-tests the executable application against its PostgreSQL service. Docker is a prerequisite for the full verification build, but not for the fast `mvn test` phase.
+
+After adding or modifying any Flyway migration, run the full `verify` workflow. Existing applied migrations should never be edited; create a new migration instead.
