@@ -152,6 +152,62 @@ class BaseEntityPersistenceIntegrationTest {
 
     @Test
     @Transactional
+    void softDeletedRowsRemainQueryableUntilExplicitlyFiltered() {
+        TestRecord active = new TestRecord();
+        TestRecord deleted = new TestRecord();
+        entityManager.persist(active);
+        entityManager.persist(deleted);
+        entityManager.flush();
+
+        UUID activeId = active.getId();
+        UUID deletedId = deleted.getId();
+
+        deleted.softDelete("integration-test");
+        entityManager.flush();
+        entityManager.clear();
+
+        assertNotNull(entityManager.find(TestRecord.class, deletedId));
+
+        Set<UUID> allIds = new HashSet<>(entityManager.createQuery(
+                "select r.id from TestRecord r", UUID.class).getResultList());
+        Set<UUID> activeIds = new HashSet<>(entityManager.createQuery(
+                "select r.id from TestRecord r where r.deleted = false", UUID.class).getResultList());
+        Set<UUID> deletedIds = new HashSet<>(entityManager.createQuery(
+                "select r.id from TestRecord r where r.deleted = true", UUID.class).getResultList());
+
+        assertEquals(Set.of(activeId, deletedId), allIds);
+        assertEquals(Set.of(activeId), activeIds);
+        assertEquals(Set.of(deletedId), deletedIds);
+    }
+
+    @Test
+    @Transactional
+    void repeatedSoftDeletePreservesPersistedDeletionMetadata() {
+        TestRecord record = new TestRecord();
+        entityManager.persist(record);
+        entityManager.flush();
+
+        record.softDelete("first-actor");
+        entityManager.flush();
+
+        UUID id = record.getId();
+        var originalDeletedAt = record.getDeletedAt();
+        var originalVersion = record.getVersion();
+
+        record.softDelete("second-actor");
+        entityManager.flush();
+        entityManager.clear();
+
+        TestRecord stored = entityManager.find(TestRecord.class, id);
+
+        assertTrue(stored.isDeleted());
+        assertEquals("first-actor", stored.getDeletedBy());
+        assertEquals(originalDeletedAt, stored.getDeletedAt());
+        assertEquals(originalVersion, stored.getVersion());
+    }
+
+    @Test
+    @Transactional
     void persistsSoftDeletionAndRestoration() {
         TestRecord record = new TestRecord();
         entityManager.persist(record);
