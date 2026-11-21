@@ -1,6 +1,6 @@
 # Adding a feature to the base project
 
-This guide describes **where** a new feature belongs and the sequence for adding persistence, business logic, HTTP endpoints, validation, errors, and tests. It reflects the modules and packages currently in the repository. The illustrative `FeatureFlag` snippets below are **not implemented application classes**; a complete working example is tracked separately in issue #31.
+This guide describes **where** a new feature belongs and the sequence for adding persistence, business logic, HTTP endpoints, validation, errors, and tests. It reflects the modules and packages currently in the repository. The illustrative `FeatureFlag` snippets below are **not implemented application classes**. See the [working application settings vertical slice](EXAMPLE_VERTICAL_SLICE.md) for a real entity, repository, transactional service, request/response DTOs, secured controller, validation, and tests.
 
 ## Existing package responsibilities
 
