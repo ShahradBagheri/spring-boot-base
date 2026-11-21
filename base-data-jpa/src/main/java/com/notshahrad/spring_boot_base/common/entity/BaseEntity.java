@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 import lombok.Getter;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -58,6 +59,32 @@ public abstract class BaseEntity {
     private String deletedBy;
 
     protected BaseEntity() {
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof BaseEntity entity)) {
+            return false;
+        }
+        if (persistentClass(this) != persistentClass(entity)) {
+            return false;
+        }
+        return getId() != null && getId().equals(entity.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return persistentClass(this).hashCode();
+    }
+
+    private static Class<?> persistentClass(Object entity) {
+        if (entity instanceof HibernateProxy proxy) {
+            return proxy.getHibernateLazyInitializer().getPersistentClass();
+        }
+        return entity.getClass();
     }
 
     public void softDelete(String deletedBy) {
