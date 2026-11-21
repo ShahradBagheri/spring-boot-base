@@ -62,7 +62,7 @@ In another terminal:
 Invoke-RestMethod http://localhost:8080/actuator/health
 ```
 
-The application normally starts on port 8080 when `SERVER_PORT` is unset. Its development profile uses PostgreSQL and `spring.jpa.hibernate.ddl-auto=validate`; it does **not** create your application schema. Flyway integration is planned, not yet included. Supply any schema your application adds before starting with `validate`.
+The application normally starts on port 8080 when `SERVER_PORT` is unset. Its development profile uses PostgreSQL, Flyway migrations, and `spring.jpa.hibernate.ddl-auto=validate`. Flyway creates the versioned schema before Hibernate validates it, starting with the `application_settings` table. Use an empty database on first startup; Flyway does not automatically baseline existing unversioned schemas. See the [database migration guide](docs/DB_MIGRATIONS.md).
 
 A `.env` file is not loaded automatically by Spring Boot: configure your IDE or shell to pass environment variables. Do not commit passwords.
 
