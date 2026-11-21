@@ -152,6 +152,36 @@ class BaseEntityPersistenceIntegrationTest {
 
     @Test
     @Transactional
+    void updatesLastModifiedAuditFieldsWithoutChangingCreationAudit() {
+        TestRecord record = new TestRecord();
+        entityManager.persist(record);
+        entityManager.flush();
+
+        UUID id = record.getId();
+        entityManager.clear();
+
+        TestRecord persisted = entityManager.find(TestRecord.class, id);
+        var originalCreatedAt = persisted.getCreatedAt();
+        var originalCreatedBy = persisted.getCreatedBy();
+        var originalUpdatedAt = persisted.getUpdatedAt();
+        var originalVersion = persisted.getVersion();
+
+        persisted.softDelete("integration-test");
+        entityManager.flush();
+        entityManager.clear();
+
+        TestRecord updated = entityManager.find(TestRecord.class, id);
+
+        assertEquals(originalCreatedAt, updated.getCreatedAt());
+        assertEquals(originalCreatedBy, updated.getCreatedBy());
+        assertNotNull(updated.getUpdatedAt());
+        assertFalse(updated.getUpdatedAt().isBefore(originalUpdatedAt));
+        assertEquals("integration-test", updated.getUpdatedBy());
+        assertTrue(updated.getVersion() > originalVersion);
+    }
+
+    @Test
+    @Transactional
     void softDeletedRowsRemainQueryableUntilExplicitlyFiltered() {
         TestRecord active = new TestRecord();
         TestRecord deleted = new TestRecord();

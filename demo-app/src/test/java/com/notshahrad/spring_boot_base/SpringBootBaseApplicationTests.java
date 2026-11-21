@@ -40,6 +40,7 @@ class SpringBootBaseApplicationTests {
     void consumesBaseDataJpa() {
         assertTrue(BaseEntity.class.isAnnotationPresent(MappedSuperclass.class));
         assertNotNull(applicationContext.getBean(JpaAuditingConfiguration.class));
+        assertTrue(applicationContext.containsBean("jpaAuditingHandler"));
         assertEquals("system", auditorAware.getCurrentAuditor().orElseThrow());
     }
 }
