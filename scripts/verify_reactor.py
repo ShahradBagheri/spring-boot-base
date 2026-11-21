@@ -27,7 +27,7 @@ dependencies = {}
 for module in modules:
     pom = load_pom(Path(module))
     assert value(pom, "artifactId") == module
-    assert value(pom, "parent") is None
+    assert value(pom.find("m:parent", NS), "artifactId") == "spring-boot-base"
     declared = set()
     for dependency in pom.findall("m:dependencies/m:dependency", NS):
         group_id = value(dependency, "groupId")
