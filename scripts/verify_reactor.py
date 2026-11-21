@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -41,7 +41,8 @@ assert dependencies["base-core"] == set()
 assert dependencies["base-data-jpa"].issubset({"base-core"})
 assert dependencies["base-web"] == {"base-core"}
 assert dependencies["base-security"] == {"base-web"}
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security"}
+assert dependencies["base-auth"] == {"base-data-jpa"}
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth"}
 
 visited = set()
 visiting = set()
@@ -86,5 +87,6 @@ if jars:
         assert any("base-data-jpa-" in name for name in names if name.startswith("BOOT-INF/lib/"))
         assert any("base-web-" in name for name in names if name.startswith("BOOT-INF/lib/"))
         assert any("base-security-" in name for name in names if name.startswith("BOOT-INF/lib/"))
+        assert any("base-auth-" in name for name in names if name.startswith("BOOT-INF/lib/"))
 
 print("Maven module isolation and executable packaging verified")
