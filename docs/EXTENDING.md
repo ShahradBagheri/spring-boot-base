@@ -13,12 +13,13 @@ All Java packages start with `com.notshahrad.spring_boot_base`.
 | `base-data-jpa/common/config` | Opt-in Spring Data JPA auditing configuration | `JpaAuditingConfiguration` |
 | `demo-app/config` | Runtime integration and application configuration | `JpaConfig` |
 | `demo-app/settings` | First concrete JPA entity and persistence example | `ApplicationSetting` |
-| `demo-app/common/response` | HTTP response records | `ApiError`, `ApiResponse` |
-| `demo-app/common/exception` | Web-layer exception translation | `GlobalExceptionHandler` |
+| `base-web/common/response` | Reusable HTTP response records | `ApiError`, `ApiResponse` |
+| `base-web/common/exception` | Web-layer exception translation | `GlobalExceptionHandler` |
+| `base-security/config` | Optional Spring Security filter chain and 401/403 mapping | `SecurityConfig` |
 
 The application entry point is `demo-app/src/main/java/com/notshahrad/spring_boot_base/SpringBootBaseApplication.java`.
 
-Keep the core module free of web, security, JPA and database dependencies. Keep REST DTOs, controllers, Spring Security configuration and request validation in the application or a dedicated web integration module. Do not make a reusable library depend on `demo-app`.
+Keep the core module free of web, security, JPA and database dependencies. `base-web` depends only on `base-core`, and `base-security` depends on `base-web`, not on the executable app. Add the optional web/security modules explicitly to a consuming application's POM. Keep REST DTOs, controllers, Spring Security configuration and request validation in the application or a dedicated web integration module. Do not make a reusable library depend on `demo-app`.
 
 ## Feature-first organization
 
