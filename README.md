@@ -73,4 +73,6 @@ See [demo-app instructions](demo-app/README.md) for further runtime details.
 
 The three modules above exist today. Optional security, sign-in, email, phone, guest-user and MCP integrations are planned features, **not installed modules**. Each should be introduced only when it has an implementation and tests; the base libraries must not depend on optional integrations.
 
+The [default security policy](docs/SECURITY_POLICY.md) is now selected for future implementation, but it is **not enforced yet**. Do not expose this demo application to untrusted clients until the Spring Security baseline is implemented and tested.
+
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).
