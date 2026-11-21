@@ -33,4 +33,18 @@ SMS possession can change after a SIM swap, number port, or reassignment. Provid
 
 For tests, use the matching `com.notshahrad:base-sms` version with Maven type `test-jar`, classifier `tests`, and test scope. Inject `RecordingSmsSender` to capture message snapshots in memory. It opens no provider connection.
 
-This foundation enables identity storage only. The next phone-auth work implements OTP generation and verification, SMS delivery from the application flow, and the signup and login endpoints. [Phone authentication epic](https://github.com/ShahradBagheri/spring-boot-base/issues/41)
+## One-time-code lifecycle
+
+Enable the reusable OTP service with both `base.auth.phone.enabled=true` and `base.auth.phone.otp.enabled=true`. Apply migration V8. Configure `base.auth.phone.otp.hmac-key` using a randomly generated Base64 key of at least 32 bytes from secret storage. Every application instance verifying the same challenges must use the same key. Changing it invalidates outstanding codes.
+
+| Property under `base.auth.phone.otp` | Default | Behavior |
+| --- | --- | --- |
+| `lifetime` | `5m` | Challenge window. Accepted range is one second through ten minutes. |
+| `resend-cooldown` | `1m` | Minimum interval before replacement. At least one second and shorter than the lifetime. |
+| `max-attempts` | `5` | Failed attempt budget per number and purpose in one challenge window. Accepted range is one through ten. |
+
+The service generates a six-digit code and returns it to the trusted delivery caller. Store the returned challenge ID for verification and give the code only to the SMS sender. PostgreSQL holds a keyed verifier bound to the phone number, purpose, and challenge ID. A resend replaces the challenge ID and verifier while preserving the expiry and failed-attempt count. A consumed or exhausted challenge cannot be replaced until its window expires.
+
+Verification locks the challenge row until the transaction ends. A successful verification consumes the challenge. The caller may join that transaction with local account creation or authentication decisions. Return rejected proof normally so the failed-attempt update can commit. Applications can periodically call `purgeExpired()` to remove expired rows after their resend cooldown has passed.
+
+The HTTP signup/login routes, SMS dispatch, and request-level abuse controls are tracked separately. [Phone authentication epic](https://github.com/ShahradBagheri/spring-boot-base/issues/41)

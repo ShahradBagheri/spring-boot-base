@@ -30,7 +30,7 @@ This table is intended for non-secret application settings, not passwords or oth
 
 ## Phone login identities
 
-`V7` creates `phone_login_identities`. Each row holds one canonical E.164 number and its verification time. The database enforces a unique number across all accounts and at most one row per local user. The migration creates the table regardless of the feature flag. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
+`V7` creates `phone_login_identities`. Each row holds one canonical E.164 number and its verification time. The database enforces a unique number across all accounts and at most one row per local user. The migration creates the table regardless of the feature flag. V8 adds phone OTP challenge rows with keyed verifiers, expiry, resend cooldown, and attempt counters. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
 
 ## First startup
 
