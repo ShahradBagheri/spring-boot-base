@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Table;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -15,7 +16,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +35,64 @@ class BaseEntityPersistenceIntegrationTest {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Test
+    @Transactional
+    void retainsHashSetMembershipAfterPersistingEntity() {
+        TestRecord record = new TestRecord();
+        Set<TestRecord> records = new HashSet<>();
+        int originalHashCode = record.hashCode();
+
+        records.add(record);
+        entityManager.persist(record);
+        entityManager.flush();
+
+        assertNotNull(record.getId());
+        assertEquals(originalHashCode, record.hashCode());
+        assertTrue(records.contains(record));
+    }
+
+    @Test
+    @Transactional
+    void comparesDetachedAndManagedInstancesByIdentifier() {
+        TestRecord record = new TestRecord();
+        entityManager.persist(record);
+        entityManager.flush();
+        UUID id = record.getId();
+        entityManager.clear();
+
+        TestRecord loaded = entityManager.find(TestRecord.class, id);
+
+        assertNotSame(record, loaded);
+        assertEquals(record, loaded);
+        assertEquals(loaded, record);
+        assertEquals(record.hashCode(), loaded.hashCode());
+    }
+
+    @Test
+    @Transactional
+    void comparesHibernateProxyAndEntitySymmetrically() {
+        TestRecord record = new TestRecord();
+        entityManager.persist(record);
+        entityManager.flush();
+        UUID id = record.getId();
+        entityManager.clear();
+
+        TestRecord proxy = entityManager.getReference(TestRecord.class, id);
+
+        assertInstanceOf(HibernateProxy.class, proxy);
+        assertEquals(record, proxy);
+        assertEquals(proxy, record);
+        assertEquals(record.hashCode(), proxy.hashCode());
+
+        Set<TestRecord> storedEntities = new HashSet<>();
+        storedEntities.add(record);
+        assertTrue(storedEntities.contains(proxy));
+
+        Set<TestRecord> storedProxies = new HashSet<>();
+        storedProxies.add(proxy);
+        assertTrue(storedProxies.contains(record));
+    }
 
     @Test
     void mapsUuidIdentifierFromBaseEntity() {
