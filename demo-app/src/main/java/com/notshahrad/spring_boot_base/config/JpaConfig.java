@@ -1,14 +1,19 @@
 package com.notshahrad.spring_boot_base.config;
 
+import com.notshahrad.spring_boot_base.common.config.JpaAuditingConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
 
-@Configuration
-@EnableJpaAuditing(auditorAwareRef = "auditorAware")
+/**
+ * Application-specific auditor identity. The reusable auditing configuration
+ * is provided by base-data-jpa rather than duplicated in the application.
+ */
+@Configuration(proxyBeanMethods = false)
+@Import(JpaAuditingConfiguration.class)
 public class JpaConfig {
 
     @Bean
