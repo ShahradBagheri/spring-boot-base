@@ -2,6 +2,7 @@ package com.notshahrad.spring_boot_base.security;
 
 import com.notshahrad.spring_boot_base.auth.email.EmailIdentityRepository;
 import com.notshahrad.spring_boot_base.auth.phone.PhoneIdentityRepository;
+import com.notshahrad.spring_boot_base.auth.phone.PhoneOtpService;
 import com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ class SecurityAccessMockMvcTest {
     @Test
     void defaultConfigurationDoesNotEnablePhoneIdentityStorage() {
         assertTrue(context.getBeansOfType(PhoneIdentityRepository.class).isEmpty());
+        assertTrue(context.getBeansOfType(PhoneOtpService.class).isEmpty());
     }
 
     @Test
