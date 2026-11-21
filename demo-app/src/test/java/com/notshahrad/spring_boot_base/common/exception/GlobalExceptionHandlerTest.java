@@ -1,7 +1,6 @@
 package com.notshahrad.spring_boot_base.common.exception;
 
-import com.notshahrad.spring_boot_base.common.response.ApiResponse;
-import com.notshahrad.spring_boot_base.common.response.ValidationErrorResponse;
+import com.notshahrad.spring_boot_base.common.response.ApiError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -11,9 +10,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GlobalExceptionHandlerTest {
+class GlobalExceptionHandlerTest {
 
     private GlobalExceptionHandler handler;
 
@@ -24,78 +25,65 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     void shouldReturnNotFoundForResourceNotFoundException() {
-        ResourceNotFoundException exception = new ResourceNotFoundException("User", 123);
-        ResponseEntity<ApiResponse<Void>> response = handler.handleResourceNotFound(exception);
+        ResponseEntity<ApiError> response = handler.handleResourceNotFound(new ResourceNotFoundException("User", 123));
+
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertFalse(response.getBody().success());
+        assertEquals(404, response.getBody().status());
         assertEquals("User not found with id: 123", response.getBody().message());
-        assertNull(response.getBody().data());
+        assertTrue(response.getBody().fieldErrors().isEmpty());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
     void shouldReturnBadRequestForBusinessException() {
-        BusinessException exception = new BusinessException("Insufficient balance");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleBusinessException(exception);
+        ResponseEntity<ApiError> response = handler.handleBusinessException(new BusinessException("Insufficient balance"));
+
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertFalse(response.getBody().success());
+        assertEquals(400, response.getBody().status());
         assertEquals("Insufficient balance", response.getBody().message());
+        assertTrue(response.getBody().fieldErrors().isEmpty());
     }
 
     @Test
-    void shouldReturnInternalServerErrorForUnexpectedException() {
-        Exception exception = new RuntimeException("Internal details");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleGeneralException(exception);
+    void shouldReturnInternalServerErrorWithoutExposingExceptionDetails() {
+        ResponseEntity<ApiError> response = handler.handleGeneralException(new RuntimeException("Internal details"));
+
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertFalse(response.getBody().success());
+        assertEquals(500, response.getBody().status());
         assertEquals("An unexpected error occurred", response.getBody().message());
-        assertNotEquals("Internal details", response.getBody().message());
+        assertTrue(response.getBody().fieldErrors().isEmpty());
     }
 
     @Test
-    void shouldReturnBadRequestForValidationException() {
-        BindingResult bindingResult = new BeanPropertyBindingResult(
-                new Object(),
-                "testRequest"
-        );
-        bindingResult.addError(
-                new FieldError(
-                        "testRequest",
-                        "name",
-                        "",
-                        false,
-                        null,
-                        null,
-                        "Name is required"
-                )
-        );
-        bindingResult.addError(
-                new FieldError(
-                        "testRequest",
-                        "email",
-                        "invalid",
-                        false,
-                        null,
-                        null,
-                        "Email must be valid"
-                )
-        );
+    void shouldReturnBadRequestWithFieldLevelValidationErrors() {
+        BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "testRequest");
+        bindingResult.addError(new FieldError("testRequest", "name", "Name is required"));
+        bindingResult.addError(new FieldError("testRequest", "email", "Email must be valid"));
 
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(null, bindingResult);
-        ResponseEntity<ValidationErrorResponse> response = handler.handleValidationException(exception);
+        ResponseEntity<ApiError> response = handler.handleValidationException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-
-        assertFalse(response.getBody().success());
+        assertEquals(400, response.getBody().status());
         assertEquals("Validation failed", response.getBody().message());
-
-        assertEquals(2, response.getBody().errors().size());
-        assertEquals("Name is required", response.getBody().errors().get("name"));
-        assertEquals("Email must be valid", response.getBody().errors().get("email"));
-
+        assertEquals("Name is required", response.getBody().fieldErrors().get("name"));
+        assertEquals("Email must be valid", response.getBody().fieldErrors().get("email"));
         assertNotNull(response.getBody().timestamp());
+    }
+
+    @Test
+    void shouldUseSafeFallbackWhenValidationMessageIsUnavailable() {
+        BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "testRequest");
+        bindingResult.addError(new FieldError("testRequest", "name", null));
+
+        MethodArgumentNotValidException exception = new MethodArgumentNotValidException(null, bindingResult);
+        ResponseEntity<ApiError> response = handler.handleValidationException(exception);
+
+        assertNotNull(response.getBody());
+        assertEquals("Invalid value", response.getBody().fieldErrors().get("name"));
     }
 }
