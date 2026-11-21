@@ -69,7 +69,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 try (var statement = connection.createStatement();
                      var result = statement.executeQuery(
                              "select count(*) from " + schema
-                                     + ".flyway_schema_history where success = true")) {
+                                     + ".flyway_schema_history where version in ('1', '2') and success = true")) {
                     assertTrue(result.next());
                     assertEquals(2, result.getInt(1));
                 }
