@@ -20,6 +20,8 @@ The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an
 
 See [module architecture and extension guide](docs/MODULES.md) for dependency rules, module-specific builds, adding optional modules, and consuming the libraries from another project.
 
+See [API error response contract](docs/API_ERRORS.md) for the planned public JSON error shape and its current integration status.
+
 ## Build and test from a fresh checkout
 
 From the repository root:
