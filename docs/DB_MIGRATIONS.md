@@ -32,6 +32,10 @@ This table is intended for non-secret application settings, not passwords or oth
 
 `V7` creates `phone_login_identities`. Each row holds one canonical E.164 number and its verification time. The database enforces a unique number across all accounts and at most one row per local user. The migration creates the table regardless of the feature flag. V8 adds phone OTP challenge rows with keyed verifiers, expiry, resend cooldown, and attempt counters. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
 
+## Guest draft ownership
+
+`V9` creates `guest_drafts` for the optional demo. Each row belongs to either a temporary guest with an expiry or a registered account. Uniqueness permits one draft per owner. The partial expiry index covers guest rows only. See the [guest session guide](GUEST_SESSION_MODEL.md#optional-postgresql-draft-example).
+
 ## First startup
 
 1. Create a **new, empty PostgreSQL database**, such as `base_project`.
