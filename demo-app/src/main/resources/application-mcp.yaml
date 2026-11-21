@@ -9,3 +9,7 @@ spring:
     mcp:
       server:
         name: spring-boot-base
+demo:
+  mcp:
+    examples:
+      enabled: true
