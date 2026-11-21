@@ -5,6 +5,7 @@ import com.notshahrad.spring_boot_base.auth.VerifiedProviderIdentity;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.util.Objects;
@@ -29,13 +30,20 @@ public class LocalOidcUserService implements OAuth2UserService<OidcUserRequest, 
     public OidcUser loadUser(OidcUserRequest userRequest) {
         OidcUser oidcUser = verifiedUserService.loadUser(userRequest);
 
-        VerifiedProviderIdentity identity = new VerifiedProviderIdentity(
-                oidcUser.getIdToken().getIssuer().toString(),
-                oidcUser.getIdToken().getSubject(),
-                oidcUser.getEmail(),
-                Boolean.TRUE.equals(oidcUser.getEmailVerified()),
-                oidcUser.getFullName()
-        );
+        var token = oidcUser.getIdToken();
+        var issuer = token.getIssuer();
+        VerifiedProviderIdentity identity;
+        try {
+            identity = new VerifiedProviderIdentity(
+                    issuer == null ? null : issuer.toExternalForm(),
+                    token.getSubject(),
+                    oidcUser.getEmail(),
+                    Boolean.TRUE.equals(oidcUser.getEmailVerified()),
+                    oidcUser.getFullName()
+            );
+        } catch (IllegalArgumentException ex) {
+            throw new OAuth2AuthenticationException("invalid_id_token");
+        }
 
         UUID localUserId = identityService.resolveOrCreate(identity);
         return new LocalOidcUser(oidcUser, localUserId);

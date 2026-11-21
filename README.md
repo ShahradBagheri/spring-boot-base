@@ -71,10 +71,10 @@ The application normally starts on port 8080 when `SERVER_PORT` is unset. Its de
 
 A `.env` file is not loaded automatically by Spring Boot: configure your IDE or shell to pass environment variables. Do not commit passwords.
 
-See [demo-app instructions](demo-app/README.md) for further runtime details.
+See the [demo app instructions](demo-app/README.md) for runtime details and the [OIDC provider setup guide](docs/OIDC_PROVIDER_SETUP.md) to enable Google or Apple sign-in.
 
 ## Project status
 
-The four reusable library modules and `demo-app` above exist today. Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts and optional Spring Security are implemented. `demo-app` opts in to `base-web` and `base-security` using Maven dependencies. Check the [security policy](docs/SECURITY_POLICY.md) for the current security baseline and limitations; sign-in, Google/Apple OIDC, outbound email, phone-based login, guest identities, and MCP integrations remain separate planned features. Do not treat test authentication as a working production login mechanism.
+Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. Email and phone authentication, guest identities, and MCP integrations are planned.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).

@@ -51,7 +51,7 @@ An unauthenticated **API** request returns HTTP 401 in `ApiError` format; a succ
 
 ## Logout contract
 
-A browser logout is a **CSRF-protected POST** to the application's logout endpoint. It clears the local authentication, invalidates the server session, and expires the app session cookie. Return a safe local redirect or success response as configured.
+With OIDC enabled, a CSRF-protected `POST /logout` clears local authentication, invalidates the server session, and expires the app session cookie. The demo returns HTTP 204. See the [provider setup guide](OIDC_PROVIDER_SETUP.md#verify-sign-in-and-logout) for verification steps.
 
 Logging out of the application **does not necessarily revoke the external Google/Apple session**. Provider-wide logout or remote token revocation is a separate optional integration that must not be implied by successful local logout.
 
@@ -63,7 +63,7 @@ Validating bearer tokens received by an API uses an OAuth2 Resource Server or eq
 
 A consumer may replace the session-oriented success handler with a deliberate application-owned token/session adapter, but must keep the local identity resolution and OIDC verification boundaries intact.
 
-## Required future tests
+## Authentication test coverage
 
 - Successful sign-in resolves a validated `iss + sub` identity to the correct local user.
 - Returning sign-in uses the existing mapping; identity linking requires explicit verification, not email matching.
@@ -73,7 +73,7 @@ A consumer may replace the session-oriented success handler with a deliberate ap
 - Public login/callback routes exist **only** with the OAuth2 module and configured provider.
 - API clients receive client-safe 401/403 rather than provider redirects.
 - The base security tests continue to pass when OAuth2 is disabled.
-- Tests use mock OIDC users/registrations, not real Google or Apple credentials.
+- Tests use local provider registrations, signed test ID tokens, and a stubbed code exchange.
 
 ## Implementation order
 
