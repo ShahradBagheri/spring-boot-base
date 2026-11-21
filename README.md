@@ -6,7 +6,8 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation built as a single Maven multi-
 
 - JDK 25
 - Maven 3.9+
-- PostgreSQL for running the `dev` profile (not needed for the standard test suite)
+- PostgreSQL for running the `dev` profile
+- Docker-compatible runtime for PostgreSQL Testcontainers integration tests (`mvn verify`); not required for `mvn test`
 
 ## Current modules
 
@@ -30,7 +31,7 @@ From the repository root:
 mvn clean verify
 ```
 
-This compiles the three modules, runs tests in the owning modules, and packages the executable `demo-app`. Tests use an embedded H2 datasource where applicable, so a running PostgreSQL instance is not required.
+This compiles the three modules, runs fast tests with H2 where applicable, runs PostgreSQL integration tests through Testcontainers and Maven Failsafe, and packages the executable `demo-app`. Docker must be available for the integration phase, but no local PostgreSQL installation or credentials are required. Use `mvn test` to run fast tests without Docker.
 
 To build only a selected module and any reactor dependencies:
 
@@ -40,7 +41,7 @@ mvn -pl base-data-jpa -am test
 mvn -pl demo-app -am package
 ```
 
-The [Maven reactor CI workflow](.github/workflows/maven-reactor.yml) also checks module boundaries, package contents and startup against PostgreSQL.
+The [Maven reactor CI workflow](.github/workflows/maven-reactor.yml) also checks module boundaries, runs Testcontainers migrations, verifies package contents, and smoke-tests startup against PostgreSQL. See the [database migration and integration-test guide](docs/DB_MIGRATIONS.md).
 
 ## Run the demo application
 
