@@ -43,6 +43,17 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 
 Both methods are final in `BaseEntity` to preserve the equality contract for subclasses. Do not add Lombok `@EqualsAndHashCode` or override either method in entity subclasses. A constant hash per entity class is a deliberate tradeoff: it avoids mutable hash codes, though many entities of one type will share a hash bucket.
 
+## BaseEntity timestamps
+
+Every concrete JPA entity extending `BaseEntity` inherits two `Instant` fields managed by Spring Data JPA auditing:
+
+- `createdAt` uses `@CreatedDate` and `@Column(nullable = false, updatable = false)`. It is populated during initial persistence and is not updated by subsequent SQL updates.
+- `updatedAt` uses `@LastModifiedDate` and `@Column(nullable = false)`. It is populated during initial persistence and refreshed when Hibernate flushes a change to a managed entity.
+
+Both fields are null on a new Java object until the auditing listener runs. The application must enable `JpaAuditingConfiguration`, as `demo-app` does through its `JpaConfig`. These values are persisted by the database; they do not update merely because a detached object is modified.
+
+The fields use `Instant` to represent instants on the UTC timeline. Database timestamp precision may differ from Java nanosecond precision, so persistence tests should compare values reloaded from the database rather than raw in-memory values before and after a round trip.
+
 ## BaseEntity soft deletion
 
 Soft deletion is an **opt-in state transition**, not automatic row filtering or a replacement for JPA repository deletion. Every entity extending `BaseEntity` inherits the `deleted`, `deletedAt`, and `deletedBy` fields.
