@@ -20,7 +20,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled"}, havingValue = "true")
+@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled", "web.enabled"},
+        havingValue = "true")
 @EnableConfigurationProperties(PhoneRateLimits.Properties.class)
 class PhoneAuthWebConfiguration {
 

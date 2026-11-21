@@ -27,7 +27,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth/phone")
-@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled"}, havingValue = "true")
+@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled", "web.enabled"},
+        havingValue = "true")
 class PhoneAuthController {
 
     private final PhoneAuthService auth;

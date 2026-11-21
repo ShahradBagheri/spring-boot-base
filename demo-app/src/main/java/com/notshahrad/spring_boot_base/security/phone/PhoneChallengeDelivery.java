@@ -16,7 +16,8 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled"}, havingValue = "true")
+@ConditionalOnProperty(prefix = "base.auth.phone", name = {"enabled", "otp.enabled", "web.enabled"},
+        havingValue = "true")
 class PhoneChallengeDelivery {
 
     private static final Logger log = LoggerFactory.getLogger(PhoneChallengeDelivery.class);

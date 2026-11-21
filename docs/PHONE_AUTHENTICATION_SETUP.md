@@ -4,7 +4,8 @@ Phone signup and login are opt-in browser session flows in `demo-app`. They use 
 
 ## Configure the application
 
-1. Add `auth-phone` to the active profiles, for example `SPRING_PROFILES_ACTIVE=dev,auth-phone`. The profile enables both `base.auth.phone.enabled` and `base.auth.phone.otp.enabled`.
+1. Add `auth-phone` to the active profiles, for example `SPRING_PROFILES_ACTIVE=dev,auth-phone`. The profile enables `base.auth.phone.enabled`, `base.auth.phone.otp.enabled`, and `base.auth.phone.web.enabled`.
+   Keep `base.auth.phone.web.enabled` off when using the OTP module on its own.
 2. Set `PHONE_AUTH_OTP_HMAC_KEY` to a Base64-encoded random key of at least 32 bytes. Generate a development key with `openssl rand -base64 32`. Store the key in your environment or secrets manager and use the same value across application replicas. Changing the key invalidates outstanding codes.
 3. Register an application-owned `SmsSender` bean from `base-sms`. Its `send(SmsMessage message)` method receives an E.164 recipient and the SMS body. Supply provider credentials and sender identity through your environment or secrets manager and configure delivery timeouts in the provider client. For automated tests, use an in-memory sender and assert on captured messages without contacting a provider. See `PhoneAuthPostgresIT` in `demo-app` for an example.
 
