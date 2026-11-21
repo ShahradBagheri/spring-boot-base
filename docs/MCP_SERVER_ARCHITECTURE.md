@@ -4,14 +4,7 @@ The `base-mcp-server` Maven module integrates Spring AI 2.0.3 with the project's
 
 Use the module for applications that deliberately let MCP clients access a bounded set of application capabilities. The default demo application has no MCP transport or discovery endpoint. The implementation uses no model provider or AI API key. The demo app registers a small set of documentation examples when the MCP profile is active.
 
-## Enable it in the demo
-
-1. Add `mcp` to the active profiles, for example `SPRING_PROFILES_ACTIVE=dev,mcp`.
-2. Set `MCP_ISSUER` to the HTTPS issuer of a trusted OAuth authorization server, such as `https://issuer.example.com`. The authorization server must publish discoverable signing keys and issue signed JWT access tokens.
-3. Set `MCP_RESOURCE` to the public HTTPS endpoint, such as `https://app.example.com/mcp`. Configure the authorization server to issue access tokens for that exact audience with the `mcp:access` scope.
-4. Connect a stateless Streamable HTTP-compatible MCP client to `/mcp`. It sends the access token in the Authorization header. The endpoint's bearer challenge points to `/.well-known/oauth-protected-resource/mcp` for discovery.
-
-In a consuming application, include `base-mcp-server`, set `base.mcp.server.enabled=true`, and configure `base.mcp.server.issuer` and `base.mcp.server.resource`. Provide a protected fallback filter chain for the rest of the application, as the demo does with `base-security`. Keep the MCP chain ahead of any filter chain that matches `/mcp`. The library uses the base module's enable flag to set the Spring AI server switch, fixed path, and protocol.
+See the [MCP setup guide](MCP_SERVER_SETUP.md) for local startup, client connection, and production deployment.
 
 ## Demo capabilities
 

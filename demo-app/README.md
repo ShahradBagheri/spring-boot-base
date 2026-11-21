@@ -34,6 +34,10 @@ An empty PostgreSQL database is initialized by Flyway on startup. The first migr
 
 Spring Boot does not automatically load a `.env` file. If you use one locally, arrange for your IDE or environment to expose its values as process environment variables.
 
+## Optional MCP server
+
+See the [MCP setup guide](../docs/MCP_SERVER_SETUP.md) to enable the server, configure its OAuth issuer, and connect a client.
+
 ## Run tests
 
 ```powershell
