@@ -16,6 +16,8 @@ This guide describes the modules that exist in the repository today and how to a
 | `base-auth-email/` | `com.notshahrad:base-auth-email:0.0.1-SNAPSHOT` | Optional verified email login identity storage |
 | `base-mail/` | `com.notshahrad:base-mail:0.0.1-SNAPSHOT` | Framework-independent outbound email message and sender contracts |
 | `base-mail-smtp/` | `com.notshahrad:base-mail-smtp:0.0.1-SNAPSHOT` | Optional Spring Boot adapter for SMTP delivery |
+| `base-auth-phone/` | `com.notshahrad:base-auth-phone:0.0.1-SNAPSHOT` | Optional verified E.164 phone login identities |
+| `base-sms/` | `com.notshahrad:base-sms:0.0.1-SNAPSHOT` | Framework-independent SMS message and sender contracts |
 | `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
 | `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
 
@@ -46,6 +48,9 @@ spring-boot-base (parent / aggregator)
   base-mail
   base-mail-smtp
     └── base-mail
+  base-auth-phone
+    └── base-auth
+  base-sms
   demo-app
     ├── base-core
     ├── base-data-jpa
@@ -55,7 +60,8 @@ spring-boot-base (parent / aggregator)
     ├── base-auth-oauth2
     ├── base-auth-token
     ├── base-auth-email
-    └── base-mail-smtp
+    ├── base-mail-smtp
+    └── base-auth-phone
 ```
 
 The parent/aggregator relationship is not a runtime dependency. Maven compiles modules in dependency order based on actual `<dependencies>` declarations, not on the order written in `<modules>`.
@@ -69,6 +75,7 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - `base-auth-token` depends on `base-auth` and `base-security`. Its stateless bearer configuration is opt-in and runs on routes selected by the consuming app.
 - `base-auth-email` uses `base-auth` local users and the consuming application's PostgreSQL datasource. `base-mail` can be used independently for outbound notifications.
 - `base-mail-smtp` implements the `base-mail` sending contract. The demo includes the adapter, and delivery is disabled until explicitly enabled.
+- `base-auth-phone` uses `base-auth` local users and the application's PostgreSQL datasource. The provider-independent SMS abstraction is in `base-sms`. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
 - `demo-app` may depend on the library modules it explicitly opts into and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.

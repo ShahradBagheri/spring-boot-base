@@ -23,6 +23,8 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repo
 | `base-auth-email` | JAR | Optional storage and normalization for verified email login identities |
 | `base-mail` | JAR | Provider-independent outbound email contracts |
 | `base-mail-smtp` | JAR | Opt-in SMTP delivery for outbound email |
+| `base-auth-phone` | JAR | Optional verified phone login identities |
+| `base-sms` | JAR | Provider-independent SMS contracts |
 | `demo-app` | Executable Spring Boot JAR | Application entry point, sample endpoints, migrations, and runtime configuration |
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
