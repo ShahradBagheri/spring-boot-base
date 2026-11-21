@@ -30,22 +30,22 @@ jobs:
           cache: maven
       - name: Verify module dependency graph
         run: python3 scripts/verify_reactor.py
+      - name: Verify Docker is available
+        run: docker info
       - name: Build and test Maven reactor
-        env:
-          FLYWAY_TEST_JDBC_URL: jdbc:postgresql://localhost:5432/base_project
-          FLYWAY_TEST_USERNAME: postgres
-          FLYWAY_TEST_PASSWORD: postgres
         run: mvn --batch-mode --no-transfer-progress clean verify
       - name: Show failing test reports
         if: failure()
         run: |
-          find . -path '*/target/surefire-reports/*.txt' -type f -print -exec cat {} \;
+          find . -type f \( -path '*/target/surefire-reports/*.txt' -o -path '*/target/failsafe-reports/*.txt' \) -print -exec cat {} \;
       - name: Upload failing test reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
-          path: '**/target/surefire-reports/**'
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
           if-no-files-found: ignore
       - name: Verify executable demo artifact
         run: python3 scripts/verify_reactor.py
