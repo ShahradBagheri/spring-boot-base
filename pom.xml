@@ -27,6 +27,7 @@
         <module>base-security</module>
         <module>base-auth</module>
         <module>base-auth-oauth2</module>
+        <module>base-auth-token</module>
         <module>demo-app</module>
     </modules>
 
@@ -64,6 +65,11 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth-oauth2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-token</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
