@@ -87,6 +87,18 @@ class ApiErrorMockMvcIntegrationTest {
                 .andExpect(jsonPath("$.exception").doesNotExist());
     }
 
+    @Test
+    void preservesMvcStatusesAndAllowHeader() throws Exception {
+        mockMvc.perform(get("/unmapped-test-route"))
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.status").value(404));
+        mockMvc.perform(get("/test-api-errors/validate"))
+                .andExpect(status().isMethodNotAllowed()).andExpect(jsonPath("$.status").value(405))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                        .string("Allow", org.hamcrest.Matchers.containsString("POST")));
+        mockMvc.perform(post("/test-api-errors/validate").with(csrf()).contentType(MediaType.TEXT_PLAIN).content("hello"))
+                .andExpect(status().isUnsupportedMediaType()).andExpect(jsonPath("$.status").value(415));
+    }
+
     record ValidationPayload(
             @NotBlank(message = "Name is required") String name,
             @Email(message = "Email must be valid") String email

@@ -7,12 +7,14 @@ import com.notshahrad.spring_boot_base.auth.email.LoginEmail;
 import com.notshahrad.spring_boot_base.mail.EmailDeliveryException;
 import com.notshahrad.spring_boot_base.mail.EmailMessage;
 import com.notshahrad.spring_boot_base.mail.EmailSender;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskRejectedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ class EmailChallengeDeliveryTest {
 
     private static final LoginEmail ADDRESS = new LoginEmail("recipient@example.test");
     private static final String PROOF = "sensitive-proof-for-test";
+    private final SimpleMeterRegistry metrics = new SimpleMeterRegistry();
     private final EmailPasswordService passwords = mock(EmailPasswordService.class);
 
     @Test
@@ -53,6 +56,8 @@ class EmailChallengeDeliveryTest {
         delivery.enqueue(ADDRESS, false);
         delivery.enqueue(ADDRESS, true);
 
+        assertThat(metrics.get("auth.challenge.delivery").tags("channel", "email", "outcome", "sent").counter().count()).isEqualTo(2);
+        assertThat(metrics.get("auth.challenge.delivery").tags("channel", "email", "outcome", "queued").counter().count()).isEqualTo(2);
         assertThat(outgoing).extracting(EmailMessage::recipient).containsExactly(ADDRESS.value(), ADDRESS.value());
         assertThat(outgoing).extracting(EmailMessage::subject).containsExactly("Custom signup", "Custom reset");
         assertThat(outgoing).extracting(EmailMessage::textBody).containsExactly(
@@ -84,9 +89,21 @@ class EmailChallengeDeliveryTest {
             worker(sender, null).enqueue(ADDRESS, true);
         }
 
+        assertThat(metrics.get("auth.challenge.delivery").tags("channel", "email", "outcome", "failed").counter().count()).isEqualTo(2);
         assertThat(output.getAll()).contains("Email challenge could not be delivered (TRANSPORT_FAILED)")
                 .contains("Email challenge processing failed (IllegalStateException)")
                 .doesNotContain(ADDRESS.value(), PROOF);
+    }
+
+    @Test
+    void countsRejectedEmailSubmissions() {
+        var factory = new StaticListableBeanFactory();
+        var worker = new EmailChallengeDelivery(passwords, mock(EmailSender.class),
+                factory.getBeanProvider(EmailChallengeTemplates.class),
+                task -> { throw new TaskRejectedException("full"); }, "https://client.example.test", metrics);
+        worker.enqueue(ADDRESS, false);
+        assertThat(metrics.get("auth.challenge.delivery").tags("channel", "email", "outcome", "rejected")
+                .counter().count()).isEqualTo(1);
     }
 
     private EmailChallengeDelivery worker(EmailSender sender, EmailChallengeTemplates templates) {
@@ -95,6 +112,6 @@ class EmailChallengeDeliveryTest {
             factory.addBean("emailChallengeTemplates", templates);
         }
         return new EmailChallengeDelivery(passwords, sender, factory.getBeanProvider(EmailChallengeTemplates.class),
-                new SyncTaskExecutor(), "https://client.example.test");
+                new SyncTaskExecutor(), "https://client.example.test", metrics);
     }
 }

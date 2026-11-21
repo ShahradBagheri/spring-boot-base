@@ -71,7 +71,18 @@ public class PhoneOtpService {
     }
 
     public int purgeExpired() {
-        return store.purgeExpired(Instant.now());
+        var cutoff = Instant.now();
+        int total = 0;
+        int removed;
+        do {
+            removed = store.purgeExpired(cutoff, 500);
+            total += removed;
+        } while (removed == 500);
+        return total;
+    }
+
+    public int purgeExpired(int batchSize) {
+        return store.purgeExpired(Instant.now(), batchSize);
     }
 
     private byte[] verifier(PhoneNumber number, Purpose purpose, UUID challengeId, String code) {

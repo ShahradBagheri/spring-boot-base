@@ -93,8 +93,18 @@ final class EmailPasswordStore {
         jdbc.update("DELETE FROM email_auth_challenges WHERE token_hash = ?", digest);
     }
 
-    int purgeExpired(Instant now) {
-        return jdbc.update("DELETE FROM email_auth_challenges WHERE expires_at <= ?", now.atOffset(ZoneOffset.UTC));
+    int purgeExpired(Instant now, int batchSize) {
+        if (batchSize < 1) {
+            throw new IllegalArgumentException("Cleanup batch size must be positive");
+        }
+        return jdbc.update("""
+                WITH expired AS (
+                    SELECT token_hash FROM email_auth_challenges
+                    WHERE expires_at <= ?
+                    ORDER BY expires_at, token_hash LIMIT ? FOR UPDATE SKIP LOCKED
+                )
+                DELETE FROM email_auth_challenges t USING expired e WHERE t.token_hash = e.token_hash
+                """, now.atOffset(ZoneOffset.UTC), batchSize);
     }
 
     enum Purpose { SIGNUP, RESET }

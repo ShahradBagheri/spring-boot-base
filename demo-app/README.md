@@ -38,6 +38,12 @@ Spring Boot does not automatically load a `.env` file. If you use one locally, a
 
 See the [MCP setup guide](../docs/MCP_SERVER_SETUP.md) to enable the server, configure its OAuth issuer, and connect a client.
 
+## Authentication maintenance and delivery metrics
+
+Set `base.auth.cleanup.enabled=true` to schedule cleanup for each enabled email-password, phone-OTP, and refresh-session service. Each service deletes up to `base.auth.cleanup.batch-size` expired rows per run (default 500, range 1–10000). The fixed delay is `base.auth.cleanup.interval` (default 5m, minimum 1s). PostgreSQL skips locked rows. Refresh-family removal also deletes its credential history. Size the batch and interval for the expected expiry rate.
+
+The Micrometer counter `auth.challenge.delivery` uses `channel=email|sms` and `outcome=queued|rejected|sent|failed`. Queued counts accepted tasks, including ineligible challenges that produce no message. Sent means the sender returned successfully. Failed includes processing and sender exceptions. Each application instance publishes its own counters.
+
 ## Run tests
 
 ```powershell

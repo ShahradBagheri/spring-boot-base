@@ -109,7 +109,18 @@ public class RefreshSessionService implements AccountRefreshSessionRevoker {
     }
 
     public int purgeExpired() {
-        return store.purgeExpired(clock.instant());
+        var cutoff = clock.instant();
+        int total = 0;
+        int removed;
+        do {
+            removed = store.purgeExpired(cutoff, 500);
+            total += removed;
+        } while (removed == 500);
+        return total;
+    }
+
+    public int purgeExpired(int batchSize) {
+        return store.purgeExpired(clock.instant(), batchSize);
     }
 
     private TokenPair mint(UUID userId, UUID sessionId, Instant now, Instant sessionExpiry,

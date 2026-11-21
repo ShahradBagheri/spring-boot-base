@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -55,6 +56,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(Exception exception) {
+        if (exception instanceof ErrorResponse error) {
+            var status = error.getStatusCode();
+            var standard = HttpStatus.resolve(status.value());
+            String message = standard == null ? "Request failed" : standard.getReasonPhrase();
+            return ResponseEntity.status(status).headers(error.getHeaders()).body(ApiError.of(status.value(), message));
+        }
         log.error("An unexpected error occurred while processing the request", exception);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

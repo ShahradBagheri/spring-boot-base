@@ -9,6 +9,7 @@ import com.notshahrad.spring_boot_base.mail.EmailDeliveryException;
 import com.notshahrad.spring_boot_base.mail.EmailMessage;
 import com.notshahrad.spring_boot_base.mail.EmailNotifications;
 import com.notshahrad.spring_boot_base.mail.EmailSender;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,23 +33,27 @@ class EmailChallengeDelivery {
     private final EmailNotifications notifications;
     private final EmailChallengeTemplates templates;
     private final TaskExecutor executor;
+    private final MeterRegistry metrics;
     private final URI clientOrigin;
 
     EmailChallengeDelivery(EmailPasswordService passwords, EmailSender sender,
                            ObjectProvider<EmailChallengeTemplates> templates,
                            @Qualifier("emailChallengeExecutor") TaskExecutor executor,
-                           @Value("${base.auth.email.client-origin}") String configuredOrigin) {
+                           @Value("${base.auth.email.client-origin}") String configuredOrigin, MeterRegistry metrics) {
         this.passwords = passwords;
         this.notifications = new EmailNotifications(sender);
         this.templates = templates.getIfAvailable(DefaultEmailChallengeTemplates::new);
         this.executor = executor;
+        this.metrics = metrics;
         this.clientOrigin = requireOrigin(configuredOrigin);
     }
 
     void enqueue(LoginEmail address, boolean reset) {
         try {
             executor.execute(() -> deliver(address, reset));
+            count("queued");
         } catch (TaskRejectedException ex) {
+            count("rejected");
             log.warn("Email challenge delivery queue is full");
         }
     }
@@ -63,10 +68,13 @@ class EmailChallengeDelivery {
                     var content = reset ? templates.passwordReset(challenge) : templates.signup(challenge);
                     return new EmailMessage(address.value(), content.subject(), content.textBody(), content.htmlBody());
                 }, new Challenge(address, link));
+                count("sent");
             });
         } catch (EmailDeliveryException ex) {
+            count("failed");
             log.warn("Email challenge could not be delivered ({})", ex.getReason());
         } catch (RuntimeException ex) {
+            count("failed");
             log.error("Email challenge processing failed ({})", ex.getClass().getSimpleName());
         }
     }
@@ -82,5 +90,9 @@ class EmailChallengeDelivery {
             throw new IllegalArgumentException("Configure an HTTPS email client origin, or an HTTP loopback origin");
         }
         return origin;
+    }
+
+    private void count(String outcome) {
+        metrics.counter("auth.challenge.delivery", "channel", "email", "outcome", outcome).increment();
     }
 }
