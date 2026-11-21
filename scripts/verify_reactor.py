@@ -47,7 +47,7 @@ assert dependencies["base-auth-token"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-email"] == {"base-auth"}
 assert dependencies["base-mail"] == set()
 assert dependencies["base-mail-smtp"] == {"base-mail"}
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail-smtp"}
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp"}
 
 visited = set()
 visiting = set()
