@@ -1,14 +1,18 @@
 package com.notshahrad.spring_boot_base.security;
 
+import com.notshahrad.spring_boot_base.auth.token.AccessTokenIssuer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,6 +25,19 @@ class SecurityAccessMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApplicationContext context;
+
+    @Autowired
+    private RequestMappingHandlerMapping requestMappingHandlerMapping;
+
+    @Test
+    void defaultConfigurationHasNoTokenIssuerOrTokenEndpoint() {
+        assertTrue(context.getBeansOfType(AccessTokenIssuer.class).isEmpty());
+        assertTrue(requestMappingHandlerMapping.getHandlerMethods().keySet().stream()
+                .noneMatch(mapping -> mapping.getPatternValues().contains("/api/token/me")));
+    }
 
     @Test
     @WithAnonymousUser

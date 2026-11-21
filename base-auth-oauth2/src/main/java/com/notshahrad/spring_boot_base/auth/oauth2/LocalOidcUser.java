@@ -1,5 +1,6 @@
 package com.notshahrad.spring_boot_base.auth.oauth2;
 
+import com.notshahrad.spring_boot_base.auth.LocalUserPrincipal;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class LocalOidcUser implements OidcUser, Serializable {
+public final class LocalOidcUser implements OidcUser, LocalUserPrincipal, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -23,6 +24,7 @@ public final class LocalOidcUser implements OidcUser, Serializable {
         this.localUserId = Objects.requireNonNull(localUserId, "localUserId must not be null");
     }
 
+    @Override
     public UUID getLocalUserId() {
         return localUserId;
     }

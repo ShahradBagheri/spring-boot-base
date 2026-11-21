@@ -12,6 +12,7 @@ This guide describes the modules that exist in the repository today and how to a
 | `base-security/` | `com.notshahrad:base-security:0.0.1-SNAPSHOT` | Optional Spring Security baseline, authentication/authorization error responses and method security |
 | `base-auth/` | `com.notshahrad:base-auth:0.0.1-SNAPSHOT` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
 | `base-auth-oauth2/` | `com.notshahrad:base-auth-oauth2:0.0.1-SNAPSHOT` | Optional OAuth2 Client / OIDC authorization-code integration with Google and Apple registrations |
+| `base-auth-token/` | `com.notshahrad:base-auth-token:0.0.1-SNAPSHOT` | Optional first-party access JWT issuance, validation, and signing-key rotation |
 | `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
 | `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
 
@@ -34,13 +35,17 @@ spring-boot-base (parent / aggregator)
   base-auth-oauth2
     ├── base-auth
     └── base-security
+  base-auth-token
+    ├── base-auth
+    └── base-security
   demo-app
     ├── base-core
     ├── base-data-jpa
     ├── base-web
     ├── base-security
     ├── base-auth
-    └── base-auth-oauth2
+    ├── base-auth-oauth2
+    └── base-auth-token
 ```
 
 The parent/aggregator relationship is not a runtime dependency. Maven compiles modules in dependency order based on actual `<dependencies>` declarations, not on the order written in `<modules>`.
@@ -51,6 +56,7 @@ The parent/aggregator relationship is not a runtime dependency. Maven compiles m
 - `base-security` depends on `base-web` for the API error response contract and adds Spring Security only for consumers that explicitly use this module. It does not depend on `demo-app`.
 - `base-auth` depends on `base-data-jpa` for persistent users and external login identity mappings; it does not depend on Spring Security, an OAuth2 Client or `demo-app`. It must only receive identities that have already been validated by a trusted authentication adapter.
 - `base-auth-oauth2` depends on `base-auth` and `base-security`; it adds Spring Security OAuth2 Client only to applications that explicitly depend on this module. The OAuth2 login filter chain is disabled unless `base.auth.oauth2.enabled=true` and suitable client registrations are configured.
+- `base-auth-token` depends on `base-auth` and `base-security`. Its stateless bearer configuration is opt-in and runs on routes selected by the consuming app.
 - `demo-app` may depend on the library modules it explicitly opts into and holds runtime configuration and application-level integrations.
 - Circular project-module dependencies are prohibited. No library module should depend on an executable application.
 - A module listed in the aggregator is built with the reactor but is not automatically added to the classpath of other modules. Runtime dependencies must be declared explicitly.

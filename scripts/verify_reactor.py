@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -43,7 +43,8 @@ assert dependencies["base-web"] == {"base-core"}
 assert dependencies["base-security"] == {"base-web"}
 assert dependencies["base-auth"] == {"base-data-jpa"}
 assert dependencies["base-auth-oauth2"] == {"base-auth", "base-security"}
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2"}
+assert dependencies["base-auth-token"] == {"base-auth", "base-security"}
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token"}
 
 visited = set()
 visiting = set()
@@ -84,11 +85,16 @@ if jars:
         manifest = jar.read("META-INF/MANIFEST.MF").decode("utf-8").replace("\r\n ", "")
         assert "Start-Class: com.notshahrad.spring_boot_base.SpringBootBaseApplication" in manifest
         assert any(name.startswith("BOOT-INF/classes/") for name in names)
-        assert any("base-core-" in name for name in names if name.startswith("BOOT-INF/lib/"))
-        assert any("base-data-jpa-" in name for name in names if name.startswith("BOOT-INF/lib/"))
-        assert any("base-web-" in name for name in names if name.startswith("BOOT-INF/lib/"))
-        assert any("base-security-" in name for name in names if name.startswith("BOOT-INF/lib/"))
-        assert any("base-auth-" in name for name in names if name.startswith("BOOT-INF/lib/"))
-        assert any("base-auth-oauth2-" in name for name in names if name.startswith("BOOT-INF/lib/"))
+        version = value(root, "version")
+        for module in dependencies["demo-app"]:
+            assert f"BOOT-INF/lib/{module}-{version}.jar" in names
+
+token_jars = list((ROOT / "base-auth-token" / "target").glob("base-auth-token-*.jar"))
+for token_jar in token_jars:
+    if token_jar.name.endswith(("-sources.jar", "-javadoc.jar")):
+        continue
+    with zipfile.ZipFile(token_jar) as jar:
+        assert not any(name.startswith("BOOT-INF/") for name in jar.namelist())
+        assert any(name.endswith("/AccessTokenIssuer.class") for name in jar.namelist())
 
 print("Maven module isolation and executable packaging verified")

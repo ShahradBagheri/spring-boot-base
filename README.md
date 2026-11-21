@@ -1,6 +1,6 @@
 # Spring Boot Base
 
-A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repository. `base-core`, `base-data-jpa`, `base-web` and `base-security` are separate library JARs; `demo-app` is the only executable application.
+A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repository. The reusable modules build as library JARs. `demo-app` is the executable application.
 
 ## Requirements
 
@@ -19,6 +19,7 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repo
 | `base-security` | JAR | Optional security filter chain, CSRF baseline, method-level authorization and JSON 401/403 responses |
 | `base-auth` | JAR | Optional local users and issuer/subject identity mapping, with fail-closed account linking |
 | `base-auth-oauth2` | JAR | Optional Google/Apple OAuth2 Client and local OIDC principal adaptation; disabled by default |
+| `base-auth-token` | JAR | Optional first-party access JWT issuance and bearer validation |
 | `demo-app` | Executable Spring Boot JAR | Application entry point, sample endpoints, migrations, and runtime configuration |
 
 The root `pom.xml` has `pom` packaging and coordinates the reactor. It is not an application.
@@ -71,7 +72,7 @@ The application normally starts on port 8080 when `SERVER_PORT` is unset. Its de
 
 A `.env` file is not loaded automatically by Spring Boot: configure your IDE or shell to pass environment variables. Do not commit passwords.
 
-See the [demo app instructions](demo-app/README.md) for runtime details and the [OIDC provider setup guide](docs/OIDC_PROVIDER_SETUP.md) to enable Google or Apple sign-in.
+See the [demo app instructions](demo-app/README.md) for runtime details and the [OIDC provider setup guide](docs/OIDC_PROVIDER_SETUP.md) to enable Google or Apple sign-in. See the [access token contract](docs/ACCESS_TOKEN_CONTRACT.md) for optional first-party JWT support.
 
 ## Project status
 
