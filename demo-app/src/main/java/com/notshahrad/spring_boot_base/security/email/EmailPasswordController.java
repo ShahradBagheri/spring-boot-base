@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.notshahrad.spring_boot_base.auth.email.EmailPasswordService;
 import com.notshahrad.spring_boot_base.auth.email.LoginEmail;
 import com.notshahrad.spring_boot_base.common.response.ApiError;
+import com.notshahrad.spring_boot_base.security.BrowserSessionLogin;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -13,13 +14,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
@@ -37,9 +31,7 @@ class EmailPasswordController {
 
     private final EmailPasswordService passwords;
     private final EmailChallengeDelivery delivery;
-    private final HttpSessionSecurityContextRepository sessions = new HttpSessionSecurityContextRepository();
-    private final ChangeSessionIdAuthenticationStrategy fixation = new ChangeSessionIdAuthenticationStrategy();
-    private final CsrfAuthenticationStrategy csrf = new CsrfAuthenticationStrategy(new HttpSessionCsrfTokenRepository());
+    private final BrowserSessionLogin browserLogin = new BrowserSessionLogin();
     private final Cache<String, AtomicInteger> attempts = Caffeine.newBuilder()
             .maximumSize(50_000).expireAfterWrite(Duration.ofMinutes(1)).build();
 
@@ -90,13 +82,7 @@ class EmailPasswordController {
             return error(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
-        var authentication = UsernamePasswordAuthenticationToken.authenticated(principal.get(), null, List.of());
-        fixation.onAuthentication(authentication, request, response);
-        csrf.onAuthentication(authentication, request, response);
-        var context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-        sessions.saveContext(context, request, response);
+        browserLogin.authenticate(principal.get(), request, response);
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 

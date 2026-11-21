@@ -39,9 +39,12 @@ public class PhoneOtpService {
     }
 
     public Optional<Delivery> issue(PhoneNumber number, Purpose purpose) {
+        return issue(number, purpose, UUID.randomUUID());
+    }
+
+    Optional<Delivery> issue(PhoneNumber number, Purpose purpose, UUID challengeId) {
         var valid = PhoneNumber.parse(number.e164(), null);
         Instant now = Instant.now();
-        UUID challengeId = UUID.randomUUID();
         String code = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
         byte[] verifier = verifier(valid, purpose, challengeId, code);
 

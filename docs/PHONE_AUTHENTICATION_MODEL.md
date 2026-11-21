@@ -47,4 +47,4 @@ The service generates a six-digit code and returns it to the trusted delivery ca
 
 Verification locks the challenge row until the transaction ends. A successful verification consumes the challenge. The caller may join that transaction with local account creation or authentication decisions. Return rejected proof normally so the failed-attempt update can commit. Applications can periodically call `purgeExpired()` to remove expired rows after their resend cooldown has passed.
 
-The HTTP signup/login routes, SMS dispatch, and request-level abuse controls are tracked separately. [Phone authentication epic](https://github.com/ShahradBagheri/spring-boot-base/issues/41)
+See the [phone authentication setup guide](PHONE_AUTHENTICATION_SETUP.md) for the HTTP routes, SMS sender bean, and request limits.

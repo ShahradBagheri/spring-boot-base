@@ -1,0 +1,9 @@
+base:
+  auth:
+    phone:
+      enabled: true
+      otp:
+        enabled: true
+        hmac-key: ${PHONE_AUTH_OTP_HMAC_KEY}
+      web:
+        enabled: true
