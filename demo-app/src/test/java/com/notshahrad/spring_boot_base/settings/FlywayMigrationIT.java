@@ -29,7 +29,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                 .load();
 
         try {
-            assertEquals(6, flyway.migrate().migrationsExecuted);
+            assertEquals(7, flyway.migrate().migrationsExecuted);
             assertTrue(flyway.validateWithResult().validationSuccessful);
             assertEquals(0, flyway.migrate().migrationsExecuted);
 
@@ -55,7 +55,7 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
 
                 try (var statement = connection.prepareStatement(
                         "select table_name from information_schema.tables "
-                                + "where table_schema = ? and table_name in ('app_users', 'external_identities', 'refresh_sessions', 'refresh_credentials', 'email_login_identities', 'email_passwords', 'email_auth_challenges')")) {
+                                + "where table_schema = ? and table_name in ('app_users', 'external_identities', 'refresh_sessions', 'refresh_credentials', 'email_login_identities', 'email_passwords', 'email_auth_challenges', 'phone_login_identities')")) {
                     statement.setString(1, schema);
                     Set<String> tables = new HashSet<>();
                     try (var result = statement.executeQuery()) {
@@ -63,15 +63,15 @@ class FlywayMigrationIT extends AbstractPostgresIntegrationTest {
                             tables.add(result.getString(1));
                         }
                     }
-                    assertEquals(Set.of("app_users", "external_identities", "refresh_sessions", "refresh_credentials", "email_login_identities", "email_passwords", "email_auth_challenges"), tables);
+                    assertEquals(Set.of("app_users", "external_identities", "refresh_sessions", "refresh_credentials", "email_login_identities", "email_passwords", "email_auth_challenges", "phone_login_identities"), tables);
                 }
 
                 try (var statement = connection.createStatement();
                      var result = statement.executeQuery(
                              "select count(*) from " + schema
-                                     + ".flyway_schema_history where version in ('1', '2', '3', '4', '5', '6') and success = true")) {
+                                     + ".flyway_schema_history where version in ('1', '2', '3', '4', '5', '6', '7') and success = true")) {
                     assertTrue(result.next());
-                    assertEquals(6, result.getInt(1));
+                    assertEquals(7, result.getInt(1));
                 }
             }
         } finally {

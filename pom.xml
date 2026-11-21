@@ -31,6 +31,8 @@
         <module>base-auth-email</module>
         <module>base-mail</module>
         <module>base-mail-smtp</module>
+        <module>base-auth-phone</module>
+        <module>base-sms</module>
         <module>demo-app</module>
     </modules>
 
@@ -88,6 +90,16 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-mail-smtp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-phone</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-sms</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

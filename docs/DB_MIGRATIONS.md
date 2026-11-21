@@ -28,6 +28,10 @@ This table is intended for non-secret application settings, not passwords or oth
 
 `V5` creates `email_login_identities` with one row per local user and a unique index on verified addresses. `V6` stores adaptive password hashes, credential versions used to invalidate browser sessions, and short-lived challenge hashes. Existing OIDC profile emails are left outside the login table. The migration runs regardless of whether the email authentication capability is enabled. See the [email authentication model](EMAIL_AUTHENTICATION_MODEL.md) for the verification policy.
 
+## Phone login identities
+
+`V7` creates `phone_login_identities`. Each row holds one canonical E.164 number and its verification time. The database enforces a unique number across all accounts and at most one row per local user. The migration creates the table regardless of the feature flag. See the [phone authentication model](PHONE_AUTHENTICATION_MODEL.md).
+
 ## First startup
 
 1. Create a **new, empty PostgreSQL database**, such as `base_project`.
