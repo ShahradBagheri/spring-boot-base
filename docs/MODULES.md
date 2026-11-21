@@ -213,6 +213,8 @@ These artifacts are currently a snapshot example, not an assertion that they hav
 
 For auditing in a consuming Spring Boot application, supply an `AuditorAware<String>` bean with the name `auditorAware` and explicitly import `com.notshahrad.spring_boot_base.common.config.JpaAuditingConfiguration`. The actual user identity must come from the consuming application's authentication model. For persistence, create your own `@Entity` classes extending `BaseEntity` and configure entity scanning and the datasource according to your application's packages and database.
 
+For auth libraries, follow [the standalone adoption guide](AUTH_MODULE_ADOPTION.md) to select migrations and register the required Spring beans.
+
 ## Add a new optional module
 
 Do not create a placeholder module until its functionality is ready. When adding one:

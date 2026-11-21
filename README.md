@@ -34,6 +34,8 @@ Start with the [developer setup guide](docs/DEVELOPMENT_SETUP.md) for Java 25, M
 
 See the [API error response contract](docs/API_ERRORS.md) for the public JSON error shape, and the [security policy](docs/SECURITY_POLICY.md) for endpoint access rules and authentication limitations.
 
+To adopt an individual auth module, see [using auth modules in another service](docs/AUTH_MODULE_ADOPTION.md) for the required PostgreSQL migrations and a standalone email/password example.
+
 ## Build and test from a fresh checkout
 
 From the repository root:

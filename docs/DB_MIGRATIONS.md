@@ -2,6 +2,8 @@
 
 The executable `demo-app` uses Flyway to version its PostgreSQL database schema. Flyway runs during application startup **before** Hibernate validates entity mappings.
 
+When consuming individual auth libraries, use the [feature-to-migration table](AUTH_MODULE_ADOPTION.md#choose-the-schema-for-your-features) to select the scripts for your service.
+
 ## Configuration
 
 - Migration files: `demo-app/src/main/resources/db/migration/`
