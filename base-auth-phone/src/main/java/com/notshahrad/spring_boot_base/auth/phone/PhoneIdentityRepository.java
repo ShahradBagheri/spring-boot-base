@@ -41,6 +41,12 @@ public class PhoneIdentityRepository {
                 """, IDENTITY, number.e164()).stream().findFirst();
     }
 
+    boolean isReserved(PhoneNumber number) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM phone_login_identities WHERE phone_number = ?)
+                """, Boolean.class, number.e164()));
+    }
+
     boolean bindVerified(UUID userId, PhoneNumber number, Instant verifiedAt) {
         PhoneNumber valid = PhoneNumber.parse(number.e164(), null);
         return jdbc.update("""

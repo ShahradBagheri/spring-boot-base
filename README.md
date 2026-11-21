@@ -81,6 +81,6 @@ See the [demo app instructions](demo-app/README.md) for runtime details and the 
 
 ## Project status
 
-Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. The [email authentication model](docs/EMAIL_AUTHENTICATION_MODEL.md) describes email identities, signup, verification, and password reset. See the [email/password setup guide](docs/EMAIL_PASSWORD_SETUP.md) for the opt-in flow. See the [email configuration guide](docs/EMAIL_CONFIGURATION.md) for independent enablement, template customization, SMTP delivery, and sender-domain setup. Phone authentication, guest identities, and MCP integrations are planned.
+Core exceptions, JPA mapping, Flyway migrations, Testcontainers integration tests, reusable web contracts, optional Spring Security, and Google/Apple OIDC sign-in are implemented. The [email authentication model](docs/EMAIL_AUTHENTICATION_MODEL.md) describes email identities, signup, verification, and password reset. See the [email/password setup guide](docs/EMAIL_PASSWORD_SETUP.md) for the opt-in flow. See the [email configuration guide](docs/EMAIL_CONFIGURATION.md) for independent enablement, template customization, SMTP delivery, and sender-domain setup. See the [phone authentication setup guide](docs/PHONE_AUTHENTICATION_SETUP.md) to enable SMS signup and login. Guest identities and MCP integrations are planned.
 
 Track remaining work in [GitHub Issues](https://github.com/ShahradBagheri/spring-boot-base/issues).
