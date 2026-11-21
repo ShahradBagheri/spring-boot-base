@@ -77,7 +77,7 @@ if jars:
     assert len(executable) == 1
     with zipfile.ZipFile(executable[0]) as jar:
         names = set(jar.namelist())
-        manifest = jar.read("META-INF/MANIFEST.MF").decode("utf-8")
+        manifest = jar.read("META-INF/MANIFEST.MF").decode("utf-8").replace("\r\n ", "")
         assert "Start-Class: com.notshahrad.spring_boot_base.SpringBootBaseApplication" in manifest
         assert any(name.startswith("BOOT-INF/classes/") for name in names)
         assert any("base-core-" in name for name in names if name.startswith("BOOT-INF/lib/"))
