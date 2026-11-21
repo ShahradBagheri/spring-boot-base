@@ -55,6 +55,14 @@ class SecurityAccessMockMvcTest {
 
     @Test
     @WithAnonymousUser
+    void defaultConfigurationDoesNotExposeGuestRoutes() throws Exception {
+        assertTrue(requestMappingHandlerMapping.getHandlerMethods().keySet().stream()
+                .noneMatch(mapping -> mapping.getPatternValues().stream().anyMatch(path -> path.startsWith("/api/guest/"))));
+        mockMvc.perform(get("/api/guest/csrf")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithAnonymousUser
     void healthEndpointRemainsPublic() throws Exception {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())

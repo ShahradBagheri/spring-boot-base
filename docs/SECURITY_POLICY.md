@@ -53,10 +53,14 @@ The empty in-memory `UserDetailsService` is also conditional on a custom `UserDe
 
 Security-filter error handling is defined in the `base-security` `SecurityConfig`; general MVC exception handling lives in the `base-web` `GlobalExceptionHandler`. Both reuse `base-web`'s `ApiError` record but are separate request-processing layers.
 
+## Optional guest routes
+
+The `auth-guest` profile adds explicit access rules for the guest session API. The guest-only rules require an active temporary browser session and an anonymous Spring Security principal. Signed-in users follow the regular account authorization policy. See the [guest session lifecycle](GUEST_SESSION_MODEL.md) for the route table and configuration.
+
 ## Tests and limitations
 
 `demo-app`'s `SecurityAccessMockMvcTest` verifies public health access, anonymous 401 errors, protected routes, 403 for a non-admin principal, and authorized access by simulated authenticated users. The reactor verification script checks that `base-security` depends on `base-web`, never on `demo-app`, and that the packaged executable includes both optional JARs. The existing error-handler MockMvc tests run with test authentication and a CSRF token on POST requests.
 
-Only `GET` and `HEAD` health checks are public. Unknown routes are still authenticated, even when a route would ultimately return 404. This is deliberate to avoid exposing the existence of internal resources to anonymous callers.
+Under the baseline filter chain, only `GET` and `HEAD` health checks are public. Unknown routes still require authentication, even when a route would ultimately return 404. This is deliberate to avoid exposing the existence of internal resources to anonymous callers.
 
 Future work includes real authentication providers, role policies for actual application operations, account lifecycle management, and production-ready session or token management. The current baseline is **not a complete authentication system**.
