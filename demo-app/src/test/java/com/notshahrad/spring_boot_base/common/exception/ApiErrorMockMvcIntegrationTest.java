@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@WithMockUser
 @Import(ApiErrorMockMvcIntegrationTest.ProbeController.class)
 class ApiErrorMockMvcIntegrationTest {
 
@@ -32,7 +35,7 @@ class ApiErrorMockMvcIntegrationTest {
 
     @Test
     void invalidRequestBodyReturnsFieldLevelApiError() throws Exception {
-        mockMvc.perform(post("/test-api-errors/validate")
+        mockMvc.perform(post("/test-api-errors/validate").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"\",\"email\":\"invalid\"}"))
                 .andExpect(status().isBadRequest())
@@ -47,7 +50,7 @@ class ApiErrorMockMvcIntegrationTest {
 
     @Test
     void malformedJsonReturnsSafeBadRequest() throws Exception {
-        mockMvc.perform(post("/test-api-errors/validate")
+        mockMvc.perform(post("/test-api-errors/validate").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":"))
                 .andExpect(status().isBadRequest())
