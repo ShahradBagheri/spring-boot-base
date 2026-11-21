@@ -99,6 +99,8 @@ A healthy application returns JSON containing `"status":"UP"`. The planned/imple
 | `pom.xml` | Maven parent and aggregator |
 | `base-core/` | Framework-independent exceptions and contracts |
 | `base-data-jpa/` | JPA `BaseEntity`, audited entity mapping infrastructure |
+| `base-web/` | Reusable HTTP response contract and MVC errors |
+| `base-security/` | Optional Spring Security baseline and JSON authentication errors |
 | `demo-app/` | Executable Spring Boot app, Flyway migrations, HTTP and runtime configuration |
 | `demo-app/src/main/resources/application.yaml` | Shared profile and Flyway defaults |
 | `demo-app/src/main/resources/application-dev.yaml` | PostgreSQL datasource and Hibernate schema validation |
