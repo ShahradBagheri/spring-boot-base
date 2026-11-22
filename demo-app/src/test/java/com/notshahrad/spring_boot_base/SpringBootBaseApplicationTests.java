@@ -31,6 +31,14 @@ class SpringBootBaseApplicationTests {
     }
 
     @Test
+    void webSocketEndpointIsDisabledByDefault() {
+        assertTrue(applicationContext.getBeansOfType(
+                com.notshahrad.base.websocket.BaseWebSocketConfiguration.class).isEmpty());
+        assertTrue(applicationContext.getBeansOfType(
+                org.springframework.web.socket.messaging.SubProtocolWebSocketHandler.class).isEmpty());
+    }
+
+    @Test
     void consumesBaseCore() {
         assertTrue(BaseException.class.isAssignableFrom(
                 com.notshahrad.spring_boot_base.common.exception.BusinessException.class));
