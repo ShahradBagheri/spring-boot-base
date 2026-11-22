@@ -21,6 +21,7 @@
     <description>Reusable Spring Boot application foundation</description>
 
     <modules>
+        <module>spring-boot-base-bom</module>
         <module>base-core</module>
         <module>base-data-jpa</module>
         <module>base-web</module>

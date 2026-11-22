@@ -21,10 +21,30 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-websocket", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server", "demo-app"}
+bom_module = "spring-boot-base-bom"
+assert set(modules) == {bom_module, "base-core", "base-data-jpa", "base-web", "base-websocket", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server", "demo-app"}
+
+bom = load_pom(Path(bom_module))
+assert value(bom, "artifactId") == bom_module
+assert value(bom, "packaging") == "pom"
+assert value(bom, "groupId") == value(root, "groupId")
+assert value(bom, "version") == value(root, "version")
+assert bom.find("m:parent", NS) is None
+assert not bom.findall("m:dependencies/m:dependency", NS)
+
+managed_artifacts = []
+for dependency in bom.findall("m:dependencyManagement/m:dependencies/m:dependency", NS):
+    assert value(dependency, "groupId") == "${project.groupId}"
+    assert value(dependency, "version") == "${project.version}"
+    assert value(dependency, "scope") is None
+    assert value(dependency, "type") in (None, "jar")
+    managed_artifacts.append(value(dependency, "artifactId"))
+assert sorted(managed_artifacts) == sorted(set(modules) - {bom_module, "demo-app"})
 
 dependencies = {}
 for module in modules:
+    if module == bom_module:
+        continue
     pom = load_pom(Path(module))
     assert value(pom, "artifactId") == module
     assert value(pom.find("m:parent", NS), "artifactId") == "spring-boot-base"
@@ -69,7 +89,7 @@ def visit(module):
     visited.add(module)
 
 
-for module in modules:
+for module in dependencies:
     visit(module)
 
 core = load_pom(Path("base-core"))

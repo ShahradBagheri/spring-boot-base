@@ -197,22 +197,30 @@ First publish the library artifacts to an accessible Maven repository, or instal
 mvn clean install
 ```
 
-In a separate project's `pom.xml`, declare the artifacts that the project actually needs. When that project does not inherit from this repository's parent POM, specify the version explicitly:
+Keep your application's Spring Boot parent and import `spring-boot-base-bom` in its `pom.xml`. Declare each library you need under `dependencies` and omit its version:
 
 ```xml
-<dependency>
-    <groupId>com.notshahrad</groupId>
-    <artifactId>base-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
-<dependency>
-    <groupId>com.notshahrad</groupId>
-    <artifactId>base-data-jpa</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.notshahrad</groupId>
+            <artifactId>spring-boot-base-bom</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.notshahrad</groupId>
+        <artifactId>base-core</artifactId>
+    </dependency>
+</dependencies>
 ```
 
-These artifacts are currently a snapshot example, not an assertion that they have been published to Maven Central or GitHub Packages. Applications that do not need persistence can depend on `base-core` alone.
+This example uses the locally installed development snapshot. The BOM manages versions for the implemented libraries, and importing it alone adds no dependencies. If you consume the libraries without the BOM, specify an explicit version for each Base dependency.
 
 For auditing in a consuming Spring Boot application, supply an `AuditorAware<String>` bean with the name `auditorAware` and explicitly import `com.notshahrad.spring_boot_base.common.config.JpaAuditingConfiguration`. The actual user identity must come from the consuming application's authentication model. For persistence, create your own `@Entity` classes extending `BaseEntity` and configure entity scanning and the datasource according to your application's packages and database.
 
@@ -226,7 +234,7 @@ Do not create a placeholder module until its functionality is ready. When adding
 2. Create a sibling directory (for example `base-security/`) with its own `pom.xml` and source/test directories.
 3. Use `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` as its Maven parent and `../pom.xml` as `relativePath`.
 4. Add the new directory to the root `<modules>` list so Maven includes it in the reactor.
-5. Declare only the dependencies that module needs. Add a root `<dependencyManagement>` entry if shared version management is useful; this does not make the module mandatory.
+5. Declare only the dependencies that module needs. Add a root `<dependencyManagement>` entry if useful for reactor consumers. Add each publishable library or starter to the consumer BOM.
 6. Add an explicit dependency only in the consuming application(s) that need that feature; keep `base-core` and unrelated modules independent.
 7. Add tests and module-boundary enforcement, and update the [reactor verification script](../scripts/verify_reactor.py) if its expected module set or dependency rules change.
 8. Run `mvn clean verify`, inspect `mvn dependency:tree` and verify the consuming application.
