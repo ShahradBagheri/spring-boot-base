@@ -88,7 +88,7 @@ class WebSocketBroadcastTest {
                     assertTrue(first.next().contains("\n\nhello"));
                     assertTrue(second.next().contains("\n\nhello"));
                     send(b, "/topic/broadcast", "forged");
-                    assertTrue(second.next().startsWith("ERROR"));
+                    assertNull(first.messages.poll(1, SECONDS), "A client published directly to the broker");
                 } finally {
                     b.abort();
                 }
