@@ -9,6 +9,7 @@ This guide describes the modules that exist in the repository today and how to a
 | `base-core/` | `com.notshahrad:base-core:0.0.1-SNAPSHOT` | Framework-independent exceptions and shared application contracts |
 | `base-data-jpa/` | `com.notshahrad:base-data-jpa:0.0.1-SNAPSHOT` | JPA mapped superclass `BaseEntity`, UUID identifier, timestamps, optimistic-lock version and deletion metadata, and opt-in auditing configuration |
 | `base-web/` | `com.notshahrad:base-web:0.0.1-SNAPSHOT` | Reusable API response contracts and Spring MVC exception mapping |
+| `base-websocket/` | `com.notshahrad:base-websocket:0.0.1-SNAPSHOT` | Optional WebSocket transport and single-instance STOMP broker |
 | `base-security/` | `com.notshahrad:base-security:0.0.1-SNAPSHOT` | Optional Spring Security baseline, authentication/authorization error responses and method security |
 | `base-auth/` | `com.notshahrad:base-auth:0.0.1-SNAPSHOT` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
 | `base-auth-oauth2/` | `com.notshahrad:base-auth-oauth2:0.0.1-SNAPSHOT` | Optional OAuth2 Client / OIDC authorization-code integration with Google and Apple registrations |
@@ -52,6 +53,7 @@ spring-boot-base (parent / aggregator)
   base-auth-phone
     └── base-auth
   base-sms
+  base-websocket          (no project-module dependency)
   base-mcp-server         (no project-module dependency)
   demo-app
     ├── base-core
@@ -66,6 +68,7 @@ spring-boot-base (parent / aggregator)
     ├── base-mail
     ├── base-auth-phone
     ├── base-sms
+    ├── base-websocket
     └── base-mcp-server
 ```
 

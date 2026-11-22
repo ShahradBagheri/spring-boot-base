@@ -21,7 +21,7 @@ modules = [
     module.text.strip()
     for module in root.findall("m:modules/m:module", NS)
 ]
-assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server", "demo-app"}
+assert set(modules) == {"base-core", "base-data-jpa", "base-web", "base-websocket", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server", "demo-app"}
 
 dependencies = {}
 for module in modules:
@@ -39,6 +39,7 @@ for module in modules:
 
 assert dependencies["base-core"] == set()
 assert dependencies["base-data-jpa"].issubset({"base-core"})
+assert dependencies["base-websocket"] == set()
 assert dependencies["base-web"] == {"base-core"}
 assert dependencies["base-security"] == {"base-web"}
 assert dependencies["base-auth"] == {"base-data-jpa"}
@@ -50,7 +51,7 @@ assert dependencies["base-mail-smtp"] == {"base-mail"}
 assert dependencies["base-auth-phone"] == {"base-auth"}
 assert dependencies["base-sms"] == set()
 assert dependencies["base-mcp-server"] == set()
-assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server"}
+assert dependencies["demo-app"] == {"base-core", "base-data-jpa", "base-web", "base-websocket", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-auth-phone", "base-sms", "base-mcp-server"}
 
 visited = set()
 visiting = set()

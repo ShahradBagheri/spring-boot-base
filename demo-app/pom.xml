@@ -20,6 +20,10 @@
     <dependencies>
         <dependency>
             <groupId>com.notshahrad</groupId>
+            <artifactId>base-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.notshahrad</groupId>
             <artifactId>base-mcp-server</artifactId>
         </dependency>
         <dependency>

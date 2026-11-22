@@ -16,6 +16,7 @@ A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repo
 | `base-core` | JAR | Framework-independent application exceptions and contracts |
 | `base-data-jpa` | JAR | Reusable JPA `BaseEntity`, mapping and opt-in auditing configuration |
 | `base-web` | JAR | Reusable API error/success DTOs and MVC exception handling |
+| `base-websocket` | JAR | Opt-in STOMP messaging over WebSocket. See the [setup guide](docs/WEBSOCKET.md). |
 | `base-security` | JAR | Optional security filter chain, CSRF baseline, method-level authorization and JSON 401/403 responses |
 | `base-auth` | JAR | Optional local users and issuer/subject identity mapping, with fail-closed account linking |
 | `base-auth-oauth2` | JAR | Optional Google/Apple OAuth2 Client and local OIDC principal adaptation; disabled by default |
