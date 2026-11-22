@@ -9,7 +9,7 @@ The selected public groupId is `io.github.shahradbagheri`, based on the [reposit
 | Artifact type | Artifact IDs |
 | --- | --- |
 | Library build parent POM | `spring-boot-base` is available to resolve published library POMs that inherit it. External apps can keep their own Spring Boot parent. |
-| Consumer BOM | `base-bom` manages all published Base libraries and starters at one release version. It leaves Spring Boot's dependency management to the application. |
+| Consumer BOM | `spring-boot-base-bom` manages all published Base libraries and starters at one release version. It leaves Spring Boot's dependency management to the application. |
 | Implementation JARs | `base-core`, `base-web`, `base-data-jpa`, `base-security`, `base-auth`, `base-auth-token`, `base-auth-oauth2`, `base-auth-email`, `base-auth-phone`, `base-mail`, `base-mail-smtp`, `base-sms`, `base-websocket`, `base-mcp-server` |
 | Opt-in starter JARs | `base-web-starter`, `base-data-jpa-starter`, `base-security-starter`, `base-auth-starter`, `base-auth-token-starter`, `base-auth-oauth2-starter`, `base-auth-email-starter`, `base-auth-phone-starter`, `base-mail-smtp-starter`, `base-websocket-starter`, `base-mcp-server-starter` |
 | Separate auto-configuration JARs where needed | `base-<feature>-autoconfigure`. Publish and manage them in the BOM when a starter needs the split. |
