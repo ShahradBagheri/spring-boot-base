@@ -11,6 +11,19 @@
 
     <name>Spring Boot Base BOM</name>
     <description>Dependency versions for Spring Boot Base libraries and starters</description>
+    <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    <developers>
+        <developer>
+            <id>ShahradBagheri</id>
+            <name>Shahrad Bagheri</name>
+            <url>https://github.com/ShahradBagheri</url>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:https://github.com/ShahradBagheri/spring-boot-base.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/ShahradBagheri/spring-boot-base.git</developerConnection>
+        <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    </scm>
 
     <dependencyManagement>
         <dependencies>

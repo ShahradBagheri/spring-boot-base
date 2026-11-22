@@ -32,10 +32,12 @@ jobs:
         run: python3 scripts/verify_reactor.py
       - name: Verify Docker is available
         run: docker info
-      - name: Build and test Maven reactor
-        run: mvn --batch-mode --no-transfer-progress clean install
-      - name: Verify BOM from a standalone Spring Boot POM
-        run: python3 scripts/verify_bom_consumer.py
+      - name: Build, test, and stage Maven artifacts
+        run: |
+          mvn --batch-mode --no-transfer-progress clean deploy \
+            "-DaltDeploymentRepository=publication-test::file://${RUNNER_TEMP}/base-maven-staging"
+      - name: Resolve staged libraries from a standalone Spring Boot POM
+        run: python3 scripts/verify_bom_consumer.py --repository "${RUNNER_TEMP}/base-maven-staging"
       - name: Show failing test reports
         if: failure()
         run: |

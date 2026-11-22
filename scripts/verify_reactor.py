@@ -53,9 +53,26 @@ for module in modules:
         group_id = value(dependency, "groupId")
         artifact_id = value(dependency, "artifactId")
         scope = value(dependency, "scope")
-        if group_id == "com.notshahrad" and artifact_id in modules and scope not in ("test", "provided"):
-            declared.add(artifact_id)
+        if group_id == value(root, "groupId") and artifact_id in modules:
+            assert artifact_id != "demo-app", f"{module} depends on demo-app"
+            if scope not in ("test", "provided"):
+                declared.add(artifact_id)
     dependencies[module] = declared
+
+    if module != "demo-app":
+        assert value(pom, "packaging") in (None, "jar"), module
+        active_plugins = pom.findall("m:build/m:plugins/m:plugin", NS)
+        assert all(value(plugin, "artifactId") != "spring-boot-maven-plugin" for plugin in active_plugins), module
+
+        artifact = ROOT / module / "target" / f"{module}-{value(root, 'version')}.jar"
+        if artifact.is_file():
+            with zipfile.ZipFile(artifact) as jar:
+                unexpected = [
+                    name for name in jar.namelist()
+                    if name.startswith(("BOOT-INF/", "db/migration/"))
+                    or ("/" not in name and name.startswith(("application.", "application-")))
+                ]
+                assert not unexpected, f"{module} includes application resources: {unexpected}"
 
 assert dependencies["base-core"] == set()
 assert dependencies["base-data-jpa"].issubset({"base-core"})
@@ -100,6 +117,7 @@ for dependency in core.findall("m:dependencies/m:dependency", NS):
         assert group_id not in {"org.postgresql", "com.h2database"}
 
 demo = load_pom(Path("demo-app"))
+assert demo.findtext("m:properties/m:maven.deploy.skip", namespaces=NS) == "true"
 assert value(demo.find("m:build/m:plugins/m:plugin", NS), "groupId") == "org.springframework.boot"
 assert value(demo.find("m:build/m:plugins/m:plugin", NS), "artifactId") == "spring-boot-maven-plugin"
 
