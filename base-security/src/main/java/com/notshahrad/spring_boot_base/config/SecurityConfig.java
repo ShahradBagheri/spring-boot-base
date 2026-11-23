@@ -34,6 +34,10 @@ public class SecurityConfig {
     @Order(2)
     @ConditionalOnMissingBean(name = "securityFilterChain")
     SecurityFilterChain securityFilterChain(HttpSecurity http, JsonMapper jsonMapper) throws Exception {
+        return authenticatedApi(http, jsonMapper);
+    }
+
+    public static SecurityFilterChain authenticatedApi(HttpSecurity http, JsonMapper jsonMapper) throws Exception {
         return http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()

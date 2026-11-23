@@ -2,6 +2,26 @@
 
 A consuming service owns its PostgreSQL schema, Flyway history, HTTP endpoints and delivery configuration. The auth JARs contain the Java implementation. The reference SQL, controllers and runtime profiles live in [demo-app](../demo-app/README.md).
 
+## Enable local identities with the starter
+
+Import `spring-boot-base-bom` and declare `com.notshahrad:base-auth-starter`. Set `base.auth.local.enabled=true` and enable JPA auditing with `base.data.jpa.auditing.enabled=true` or an application auditing configuration.
+
+The starter adds the local auth package to Spring Boot's default entity and repository discovery alongside the application's own package. If the application uses explicit `@EntityScan` or `@EnableJpaRepositories` declarations, include the packages of `AppUser` and `AppUserRepository` in those declarations.
+
+The application configures its datasource and applies the local-identity schema from migration V2. The starter exposes identity persistence and `OidcIdentityService`. Pass it identities already verified by a trusted authentication adapter. Linking still requires an application-supplied `AccountLinkApproval`.
+
+## Enable email or phone authentication
+
+- Add `base-auth-email-starter` and set `base.auth.email.enabled=true`. To enable password and challenge services, also set `base.auth.email.password-enabled=true`. Apply V2 and V5 for identity storage, and V6 for password flows. Your application owns the endpoints, challenge URLs, and delivery. Send challenges using an application-provided `EmailSender` from `base-mail`; an SMTP adapter is optional.
+- Add `base-auth-phone-starter` and set `base.auth.phone.enabled=true`. For OTP, set `base.auth.phone.otp.enabled=true`, provide an HMAC key and an application `SmsSender`, and use `PhoneOtpDelivery` to send a challenge returned by `PhoneAuthService`. OTP startup requires the sender. Apply V2, V7, and V8 for OTP, and V2 and V7 for identity lookup alone. Keep destination throttling, delivery policy, and HTTP endpoints in the application.
+
+Enable local identities and auditing as described above for flows that read or write local accounts. Keep codes and tokens out of logs and HTTP responses.
+
+## Enable tokens or OIDC login
+
+- Add `base-auth-token-starter` to use the token issuer, refresh sessions, and resource server adapter. Set `base.auth.token.enabled=true`, provide the issuer, audience, and signing keys, and apply V2–V4. The application chooses the routes for bearer authentication and calls `AccessTokenResourceServer.configure` from its own scoped chain. If you supply any chains, include a fallback for remaining routes. See [token operations](TOKEN_OPERATIONS.md).
+- Add `base-auth-oauth2-starter` for browser OIDC login. Enable local identities and JPA auditing, apply V2, set `base.auth.oauth2.enabled=true`, and supply the application’s provider registrations. The starter installs a scoped login and logout chain and retains the security starter fallback unless your application supplies its own chain. A custom `oauth2LoginFilterChain` bean replaces the starter login chain. Configure callbacks and credentials using the [provider setup guide](OIDC_PROVIDER_SETUP.md).
+
 ## Choose the schema for your features
 
 The version numbers below identify the source scripts in the [demo migration directory](../demo-app/src/main/resources/db/migration/). For multiple features, take the union of their scripts and apply each once in source order.

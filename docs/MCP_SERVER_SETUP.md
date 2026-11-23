@@ -45,7 +45,7 @@ The response identifies `spring-boot-base` and advertises the server capabilitie
 
 ## Deploy and extend
 
-In a consuming app, add `com.notshahrad:base-mcp-server`, configure `base.mcp.server.enabled`, `base.mcp.server.issuer`, and `base.mcp.server.resource`, and keep a protected fallback filter chain for other application routes. Give the dedicated MCP chain precedence for `/mcp`.
+In a consuming app, import `spring-boot-base-bom` and add `com.notshahrad:base-mcp-server-starter`. To enable the endpoint, configure `base.mcp.server.enabled`, `base.mcp.server.issuer`, and `base.mcp.server.resource`, and keep a protected fallback filter chain for other application routes. Give the dedicated MCP chain precedence for `/mcp`.
 
 In production, use HTTPS for the issuer and application endpoint. If you terminate TLS at a reverse proxy, route both `/mcp` and its protected-resource metadata path to the app. Ensure the public resource URL and issued audience match. Configure gateway request and body-size limits, especially for traffic before authentication and across replicas. Keep bearer tokens out of logs and use short-lived tokens from your production issuer. [Transport and authorization design](MCP_SERVER_ARCHITECTURE.md#authorization-and-operating-limits)
 
