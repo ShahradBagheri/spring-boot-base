@@ -42,6 +42,7 @@
         <module>base-data-jpa</module>
         <module>base-data-jpa-starter</module>
         <module>base-web</module>
+        <module>base-web-starter</module>
         <module>base-websocket</module>
         <module>base-security</module>
         <module>base-auth</module>
@@ -90,6 +91,11 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-web-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
