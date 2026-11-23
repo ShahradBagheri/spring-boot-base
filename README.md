@@ -2,6 +2,64 @@
 
 A reusable Java 25 / Spring Boot 4.1.2 foundation in one Maven multi-module repository. The reusable modules build as library JARs. `demo-app` is the executable application.
 
+## Start a new application
+
+Spring Boot Base supports two ways to start an independent application. Both use
+Java 25, a Spring Boot 4.1.2 parent, and a pinned Base BOM.
+
+### Add the starters to an existing Maven app
+
+Create an app at [Spring Initializr](https://start.spring.io/) or use an existing
+Spring Boot Maven project. Set `base.version` to a version already available
+from Maven Central, then import the BOM and select the starters you need.
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.github.shahradbagheri</groupId>
+            <artifactId>spring-boot-base-bom</artifactId>
+            <version>${base.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>io.github.shahradbagheri</groupId>
+        <artifactId>base-web-starter</artifactId>
+    </dependency>
+</dependencies>
+```
+
+The first public release is pending. The repository's staged-artifact workflow
+can verify starter usage before the public coordinates are available. Public
+Maven Central downloads use Maven's default repository without credentials.
+See the [distribution guide](docs/MAVEN_DISTRIBUTION.md) for supported versions.
+
+### Download a generated application
+
+Run `python3 generator/server.py --base-version VERSION`, using an existing
+public Base release for `VERSION`. Open `http://127.0.0.1:8080`, choose the
+features you need and download the ZIP. The generated project has its own
+Boot parent, wrapper, configuration, and tests. See the
+[generator documentation](generator/README.md) for CLI use.
+
+### Configure your application
+
+Use application-owned credentials, security policies, datasource settings and
+schema migrations. The [starter defaults](docs/STARTER_CONVENTIONS.md) describe
+feature flags and bean overrides. For a project that copied the Base source,
+follow the [migration guide](docs/MIGRATE_COPIED_PROJECT.md) before substituting
+starter dependencies.
+
+## Develop the Base libraries
+
+Clone this repository to develop the Base implementation, starters, demo, or
+generator.
+
 ## Requirements
 
 - JDK 25
