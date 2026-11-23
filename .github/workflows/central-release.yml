@@ -65,9 +65,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-          server-id: central
-          server-username: CENTRAL_USERNAME
-          server-password: CENTRAL_TOKEN
+          overwrite-settings: false
           gpg-private-key: ${{ secrets.CENTRAL_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Sign and verify the Maven release bundle
