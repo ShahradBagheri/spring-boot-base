@@ -64,6 +64,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>base-data-jpa-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>base-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
