@@ -34,6 +34,7 @@ assert set(modules) == {
     "base-security",
     "base-security-starter",
     "base-auth",
+    "base-auth-starter",
     "base-auth-oauth2",
     "base-auth-token",
     "base-auth-email",
@@ -107,6 +108,7 @@ assert dependencies["base-security"] == {"base-web"}
 assert dependencies["base-data-jpa-starter"] == {"base-data-jpa"}
 assert dependencies["base-security-starter"] == {"base-security"}
 assert dependencies["base-auth"] == {"base-data-jpa"}
+assert dependencies["base-auth-starter"] == {"base-auth", "base-data-jpa-starter"}
 assert dependencies["base-auth-oauth2"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-token"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-email"] == {"base-auth"}

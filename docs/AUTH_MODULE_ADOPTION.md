@@ -2,6 +2,14 @@
 
 A consuming service owns its PostgreSQL schema, Flyway history, HTTP endpoints and delivery configuration. The auth JARs contain the Java implementation. The reference SQL, controllers and runtime profiles live in [demo-app](../demo-app/README.md).
 
+## Enable local identities with the starter
+
+Import `spring-boot-base-bom` and declare `com.notshahrad:base-auth-starter`. Set `base.auth.local.enabled=true` and enable JPA auditing with `base.data.jpa.auditing.enabled=true` or an application auditing configuration.
+
+The starter adds the local auth package to Spring Boot's default entity and repository discovery alongside the application's own package. If the application uses explicit `@EntityScan` or `@EnableJpaRepositories` declarations, include the packages of `AppUser` and `AppUserRepository` in those declarations.
+
+The application configures its datasource and applies the local-identity schema from migration V2. The starter exposes identity persistence and `OidcIdentityService`. Pass it identities already verified by a trusted authentication adapter. Linking still requires an application-supplied `AccountLinkApproval`.
+
 ## Choose the schema for your features
 
 The version numbers below identify the source scripts in the [demo migration directory](../demo-app/src/main/resources/db/migration/). For multiple features, take the union of their scripts and apply each once in source order.
