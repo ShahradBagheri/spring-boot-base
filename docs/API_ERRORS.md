@@ -2,6 +2,19 @@
 
 `ApiError` is the standard error response model defined in `base-web/src/main/java/com/notshahrad/spring_boot_base/common/response/ApiError.java`. It is an immutable Java record for public API errors. The `base-web` JAR owns the reusable `GlobalExceptionHandler`; the `base-security` JAR consumes `ApiError` without depending on `demo-app`.
 
+## Enable MVC exception handling in an application
+
+Import `spring-boot-base-bom` and add the starter to your servlet application's Maven dependencies.
+
+```xml
+<dependency>
+    <groupId>com.notshahrad</groupId>
+    <artifactId>base-web-starter</artifactId>
+</dependency>
+```
+
+The starter registers `GlobalExceptionHandler` through Boot auto-configuration, including in applications outside Base's package tree. It also provides the `ApiResponse` and `ApiError` types. Controllers can return `ApiResponse` explicitly. A bean typed as `GlobalExceptionHandler` or a subclass replaces the default. For an independent advice that handles specific exceptions, use a higher precedence than the default advice.
+
 ## JSON shape
 
 An ordinary error has the following structure:

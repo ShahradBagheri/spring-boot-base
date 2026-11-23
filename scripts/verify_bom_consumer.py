@@ -73,11 +73,11 @@ CONSUMER_POM = f"""<project xmlns="http://maven.apache.org/POM/4.0.0">
     </dependencyManagement>{repositories}
     <profiles>
         <profile>
-            <id>base-web</id>
+            <id>base-web-starter</id>
             <dependencies>
                 <dependency>
                     <groupId>{base_group}</groupId>
-                    <artifactId>base-web</artifactId>
+                    <artifactId>base-web-starter</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -120,15 +120,24 @@ with TemporaryDirectory(prefix="spring-boot-base-consumer-") as directory:
     imported = dependencies(project)
     assert imported == [], f"BOM import added dependencies: {imported}"
 
-    selected = dependencies(project, "-Pbase-web")
-    assert [(entry["artifactId"], entry["version"]) for entry in selected] == [("base-web", base_version)], selected
+    selected = dependencies(project, "-Pbase-web-starter")
+    assert [(entry["artifactId"], entry["version"]) for entry in selected] == [("base-web-starter", base_version)], selected
 
+    web = selected[0]["children"]
+    assert [(entry["artifactId"], entry["version"]) for entry in web] == [("base-web", base_version)], web
     transitive = {
         (entry["groupId"], entry["artifactId"]): entry["version"]
-        for entry in selected[0]["children"]
+        for entry in web[0]["children"]
     }
     assert transitive[(base_group, "base-core")] == base_version, transitive
     assert transitive[("org.springframework.boot", "spring-boot-starter-webmvc")] == boot_version, transitive
+    resolved = set(coordinates(selected))
+    assert {artifact for group, artifact in resolved if group == base_group} == {
+        "base-web-starter", "base-web", "base-core"
+    }, resolved
+    assert not any(group.startswith(("org.springframework.security", "org.hibernate", "jakarta.persistence"))
+                   or artifact.startswith(("spring-boot-data-jpa", "spring-boot-starter-data-jpa"))
+                   for group, artifact in resolved), resolved
 
     if repository is not None:
         selected = dependencies(project, "-Pall-libraries")
