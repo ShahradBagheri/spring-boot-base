@@ -17,6 +17,11 @@ The application configures its datasource and applies the local-identity schema 
 
 Enable local identities and auditing as described above for flows that read or write local accounts. Keep codes and tokens out of logs and HTTP responses.
 
+## Enable tokens or OIDC login
+
+- Add `base-auth-token-starter` to use the token issuer, refresh sessions, and resource server adapter. Set `base.auth.token.enabled=true`, provide the issuer, audience, and signing keys, and apply V2–V4. The application chooses the routes for bearer authentication and calls `AccessTokenResourceServer.configure` from its own scoped chain. If you supply any chains, include a fallback for remaining routes. See [token operations](TOKEN_OPERATIONS.md).
+- Add `base-auth-oauth2-starter` for browser OIDC login. Enable local identities and JPA auditing, apply V2, set `base.auth.oauth2.enabled=true`, and supply the application’s provider registrations. The starter installs a scoped login and logout chain and retains the security starter fallback unless your application supplies its own chain. A custom `oauth2LoginFilterChain` bean replaces the starter login chain. Configure callbacks and credentials using the [provider setup guide](OIDC_PROVIDER_SETUP.md).
+
 ## Choose the schema for your features
 
 The version numbers below identify the source scripts in the [demo migration directory](../demo-app/src/main/resources/db/migration/). For multiple features, take the union of their scripts and apply each once in source order.
