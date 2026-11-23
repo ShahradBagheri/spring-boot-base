@@ -42,10 +42,13 @@ class GeneratorTest(unittest.TestCase):
         with ZipFile(io.BytesIO(jar)) as archive:
             pom = archive.read("example-service/pom.xml").decode()
             config = archive.read("example-service/src/main/resources/application.yml").decode()
+            readme = archive.read("example-service/README.md").decode()
         self.assertIn(FEATURES["auth"]["artifact"], pom)
         self.assertIn(FEATURES["jpa"]["artifact"], pom)
         self.assertNotIn(FEATURES["smtp"]["artifact"], pom)
         self.assertIn("base.auth.email.password-enabled: false", config)
+        self.assertIn("Apply the email authentication migrations", readme)
+        self.assertNotIn("Configure the SMTP host", readme)
         self.assertEqual(resolve(["websocket"]), ["security", "web", "websocket"])
 
     def test_rejects_invalid_names_database_and_snapshot_versions(self):

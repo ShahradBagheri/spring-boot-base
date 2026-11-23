@@ -13,3 +13,8 @@ For the CLI, save JSON project options with `name`, `group`, `artifact`,
 The generator emits a standalone Maven application with the wrapper,
 a pinned BOM, and the selected dependencies. The listener binds to loopback,
 and the download endpoint builds ZIPs in memory.
+
+The catalog lists each selectable starter or library, prerequisite features,
+compatible database settings, and the direct Spring Boot starters brought in by
+its implementation. Required features are added automatically. Generated
+application documentation includes setup steps for the features you select.
