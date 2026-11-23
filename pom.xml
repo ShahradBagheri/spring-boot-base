@@ -44,6 +44,7 @@
         <module>base-web</module>
         <module>base-web-starter</module>
         <module>base-websocket</module>
+        <module>base-websocket-starter</module>
         <module>base-security</module>
         <module>base-security-starter</module>
         <module>base-auth</module>
@@ -53,11 +54,15 @@
         <module>base-auth-token</module>
         <module>base-auth-token-starter</module>
         <module>base-auth-email</module>
+        <module>base-auth-email-starter</module>
         <module>base-mail</module>
         <module>base-mail-smtp</module>
+        <module>base-mail-smtp-starter</module>
         <module>base-auth-phone</module>
+        <module>base-auth-phone-starter</module>
         <module>base-sms</module>
         <module>base-mcp-server</module>
+        <module>base-mcp-server-starter</module>
         <module>demo-app</module>
     </modules>
 
@@ -74,7 +79,17 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-websocket-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-mcp-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-mcp-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -149,6 +164,11 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-email-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -159,7 +179,17 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-mail-smtp-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth-phone</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-phone-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

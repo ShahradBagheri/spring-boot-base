@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfiguration(beforeName = {
+        "com.notshahrad.base.mcp.McpSecurityAutoConfiguration",
         "org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration",
         "org.springframework.boot.security.oauth2.client.autoconfigure.servlet.OAuth2ClientWebSecurityAutoConfiguration",
         "org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration"

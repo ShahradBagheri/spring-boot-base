@@ -10,6 +10,13 @@ The starter adds the local auth package to Spring Boot's default entity and repo
 
 The application configures its datasource and applies the local-identity schema from migration V2. The starter exposes identity persistence and `OidcIdentityService`. Pass it identities already verified by a trusted authentication adapter. Linking still requires an application-supplied `AccountLinkApproval`.
 
+## Enable email or phone authentication
+
+- Add `base-auth-email-starter` and set `base.auth.email.enabled=true`. To enable password and challenge services, also set `base.auth.email.password-enabled=true`. Apply V2 and V5 for identity storage, and V6 for password flows. Your application owns the endpoints, challenge URLs, and delivery. Send challenges using an application-provided `EmailSender` from `base-mail`; an SMTP adapter is optional.
+- Add `base-auth-phone-starter` and set `base.auth.phone.enabled=true`. For OTP, set `base.auth.phone.otp.enabled=true`, provide an HMAC key and an application `SmsSender`, and use `PhoneOtpDelivery` to send a challenge returned by `PhoneAuthService`. OTP startup requires the sender. Apply V2, V7, and V8 for OTP, and V2 and V7 for identity lookup alone. Keep destination throttling, delivery policy, and HTTP endpoints in the application.
+
+Enable local identities and auditing as described above for flows that read or write local accounts. Keep codes and tokens out of logs and HTTP responses.
+
 ## Enable tokens or OIDC login
 
 - Add `base-auth-token-starter` to use the token issuer, refresh sessions, and resource server adapter. Set `base.auth.token.enabled=true`, provide the issuer, audience, and signing keys, and apply V2–V4. The application chooses the routes for bearer authentication and calls `AccessTokenResourceServer.configure` from its own scoped chain. If you supply any chains, include a fallback for remaining routes. See [token operations](TOKEN_OPERATIONS.md).

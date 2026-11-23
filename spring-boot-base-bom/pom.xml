@@ -44,6 +44,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>base-auth-email-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>base-auth-oauth2</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -55,6 +60,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>base-auth-phone</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>base-auth-phone-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -94,7 +104,17 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>base-mail-smtp-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>base-mcp-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>base-mcp-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -125,6 +145,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>base-websocket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>base-websocket-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
