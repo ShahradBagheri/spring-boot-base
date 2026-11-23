@@ -65,6 +65,11 @@ class SecurityAccessMockMvcTest {
     }
 
     @Test
+    void defaultConfigurationDoesNotRegisterStompEndpoints() {
+        assertFalse(context.containsBean("stompWebSocketHandlerMapping"));
+    }
+
+    @Test
     @WithAnonymousUser
     void defaultConfigurationDoesNotExposeMcpEvenIfStarterIsEnabled() throws Exception {
         assertFalse(context.containsBean("webMvcStatelessServerRouterFunction"));
