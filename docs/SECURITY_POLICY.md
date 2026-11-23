@@ -1,5 +1,11 @@
 # Default Spring Security policy
 
+## Use the security starter
+
+Import `spring-boot-base-bom` and declare `com.notshahrad:base-security-starter` to use the servlet API defaults. The default chain requires authentication for application routes, permits GET and HEAD health checks, retains CSRF protection, and responds with `ApiError` on authentication and authorization failures. The application supplies its authentication mechanism.
+
+A consumer-provided `SecurityFilterChain` replaces the default. When using multiple scoped chains, the application must include a fallback covering every remaining route. A consumer-provided `SecurityExceptionHandler` replaces the MVC advice. The application can enable method security in its own configuration when supplying the chains.
+
 ## Implemented baseline
 
 The reusable `base-security` Maven JAR owns the secure-by-default Spring Security filter chain in `base-security/src/main/java/com/notshahrad/spring_boot_base/config/SecurityConfig.java`. The executable `demo-app` opts in via a direct Maven dependency on `base-security`, and its own `base-web` dependency supplies the shared `ApiError` contract. `base-core` and `base-data-jpa` remain independent of security.
