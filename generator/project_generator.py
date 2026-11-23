@@ -10,7 +10,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 HERE = Path(__file__).resolve().parent
 CATALOG = json.loads((HERE / "catalog.json").read_text(encoding="utf-8"))
 FEATURES = CATALOG["features"]
-DATABASES = {"none", "postgresql"}
+DATABASES = frozenset(CATALOG["databases"])
 PUBLIC_GROUP = "io.github.shahradbagheri"
 IDENTIFIER = re.compile(r"[a-z][a-z0-9_]*")
 ARTIFACT = re.compile(r"[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*")
@@ -64,7 +64,9 @@ def validate(options):
     if options.get("java", CATALOG["java"]) != CATALOG["java"] or options.get("boot", CATALOG["springBoot"]) != CATALOG["springBoot"]:
         raise ValueError("Choose the supported Java and Spring Boot versions.")
     resolved = resolve(options.get("features", []))
-    if ("jpa" in resolved) != (database == "postgresql"):
+    required_database = next((FEATURES[key]["database"] for key in resolved
+                              if "database" in FEATURES[key]), "none")
+    if database != required_database:
         raise ValueError("Select PostgreSQL when using JPA. Otherwise choose no database.")
     return name, group, artifact, package, resolved
 
@@ -210,13 +212,11 @@ def project_zip(options, version, base_group=PUBLIC_GROUP, *, staged=False):
     ]
     if resolved:
         readme += ["", "Included features: " + ", ".join(FEATURES[key]["label"] for key in resolved) + "."]
-    if database:
-        readme += ["", "Export the datasource variables from `.env.example` and apply your application-owned migrations.",
-                   "The migration directory is reserved for your scripts. Configure Flyway if you use it."]
-    if set(resolved) & {"security", "auth", "oidc", "token", "email", "phone", "websocket", "mcp", "smtp"}:
-        readme += ["", "Keep optional features disabled until their application-owned credentials, infrastructure, "
-                   "and route authorization are configured. See the [Base starter documentation]"
-                   "(https://github.com/ShahradBagheri/spring-boot-base/tree/master/docs)."]
+    setup = [FEATURES[key]["setup"] for key in resolved if "setup" in FEATURES[key]]
+    if setup:
+        readme += ["", "## Feature setup", ""] + [f"- {instruction}" for instruction in setup]
+        readme += ["", "[Base starter documentation]"
+                   "(https://github.com/ShahradBagheri/spring-boot-base/tree/master/docs)"]
     files["README.md"] = "\n".join(readme) + "\n"
     for wrapper in ("mvnw", "mvnw.cmd", ".mvn/wrapper/maven-wrapper.properties"):
         files[wrapper] = (HERE.parent / wrapper).read_bytes()

@@ -3,22 +3,199 @@
   "java": "25",
   "springBoot": "4.1.2",
   "features": {
-    "core": {"label": "Core contracts", "artifact": "base-core", "kind": "library"},
-    "web": {"label": "REST API", "artifact": "base-web-starter"},
-    "jpa": {"label": "Data JPA", "artifact": "base-data-jpa-starter", "flags": {"base.data.jpa.auditing.enabled": true}},
-    "security": {"label": "Servlet security", "artifact": "base-security-starter", "requires": ["web"]},
-    "auth": {"label": "Local identities", "artifact": "base-auth-starter", "requires": ["jpa"], "flags": {"base.auth.local.enabled": false}},
-    "token": {"label": "Access and refresh tokens", "artifact": "base-auth-token-starter", "requires": ["auth", "security"], "flags": {"base.auth.token.enabled": false}},
-    "oidc": {"label": "OIDC login", "artifact": "base-auth-oauth2-starter", "requires": ["auth", "security"], "flags": {"base.auth.oauth2.enabled": false}},
-    "email": {"label": "Email authentication", "artifact": "base-auth-email-starter", "requires": ["auth"], "flags": {"base.auth.email.enabled": false, "base.auth.email.password-enabled": false}},
-    "smtp": {"label": "SMTP delivery", "artifact": "base-mail-smtp-starter", "flags": {"base.mail.smtp.enabled": false}},
-    "phone": {"label": "Phone authentication", "artifact": "base-auth-phone-starter", "requires": ["auth"], "flags": {"base.auth.phone.enabled": false, "base.auth.phone.otp.enabled": false}},
-    "websocket": {"label": "STOMP WebSocket", "artifact": "base-websocket-starter", "requires": ["web", "security"], "flags": {"base.websocket.enabled": false}},
-    "mcp": {"label": "MCP server", "artifact": "base-mcp-server-starter", "requires": ["web", "security"], "flags": {"base.mcp.server.enabled": false}}
+    "core": {
+      "label": "Core contracts",
+      "artifact": "base-core",
+      "kind": "library",
+      "description": "Shared application contracts and framework-independent exceptions.",
+      "springBootDependencies": []
+    },
+    "web": {
+      "label": "REST API",
+      "artifact": "base-web-starter",
+      "kind": "starter",
+      "description": "Spring MVC response contracts and exception mapping.",
+      "springBootDependencies": [
+        "spring-boot-starter-webmvc"
+      ]
+    },
+    "jpa": {
+      "label": "Data JPA",
+      "artifact": "base-data-jpa-starter",
+      "flags": {
+        "base.data.jpa.auditing.enabled": true
+      },
+      "kind": "starter",
+      "description": "JPA base entities and auditing backed by PostgreSQL.",
+      "springBootDependencies": [
+        "spring-boot-starter-data-jpa"
+      ],
+      "setup": "Export the datasource variables from `.env.example` and apply your application-owned migrations. Configure Flyway if you use it.",
+      "database": "postgresql"
+    },
+    "security": {
+      "label": "Servlet security",
+      "artifact": "base-security-starter",
+      "requires": [
+        "web"
+      ],
+      "kind": "starter",
+      "description": "Servlet security with API error responses.",
+      "springBootDependencies": [
+        "spring-boot-starter-security"
+      ],
+      "setup": "Supply your authentication mechanism and set the application's route authorization rules."
+    },
+    "auth": {
+      "label": "Local identities",
+      "artifact": "base-auth-starter",
+      "requires": [
+        "jpa"
+      ],
+      "flags": {
+        "base.auth.local.enabled": false
+      },
+      "kind": "starter",
+      "description": "Persist local users and connect external identities.",
+      "springBootDependencies": [],
+      "setup": "Apply the local identity migrations and configure account provisioning before enabling `base.auth.local.enabled`."
+    },
+    "token": {
+      "label": "Access and refresh tokens",
+      "artifact": "base-auth-token-starter",
+      "requires": [
+        "auth",
+        "security"
+      ],
+      "flags": {
+        "base.auth.token.enabled": false
+      },
+      "kind": "starter",
+      "description": "Issue and validate first-party access tokens and rotate refresh tokens.",
+      "springBootDependencies": [],
+      "setup": "Configure a signing key and issuer, apply the token migrations, and scope token issuance to trusted application authentication before enabling `base.auth.token.enabled`."
+    },
+    "oidc": {
+      "label": "OIDC login",
+      "artifact": "base-auth-oauth2-starter",
+      "requires": [
+        "auth",
+        "security"
+      ],
+      "flags": {
+        "base.auth.oauth2.enabled": false
+      },
+      "kind": "starter",
+      "description": "Optional Google or Apple sign-in for local identities.",
+      "springBootDependencies": [
+        "spring-boot-starter-security-oauth2-client"
+      ],
+      "setup": "Set the provider client credentials, redirect URI, and account linking policy before enabling `base.auth.oauth2.enabled`."
+    },
+    "email": {
+      "label": "Email authentication",
+      "artifact": "base-auth-email-starter",
+      "requires": [
+        "auth"
+      ],
+      "flags": {
+        "base.auth.email.enabled": false,
+        "base.auth.email.password-enabled": false
+      },
+      "kind": "starter",
+      "description": "Persist verified email identities and opt in to password authentication.",
+      "springBootDependencies": [],
+      "setup": "Apply the email authentication migrations and supply an email sender for flows that deliver a message before enabling email authentication."
+    },
+    "smtp": {
+      "label": "SMTP delivery",
+      "artifact": "base-mail-smtp-starter",
+      "flags": {
+        "base.mail.smtp.enabled": false
+      },
+      "kind": "starter",
+      "description": "Provider-independent email with an SMTP transport.",
+      "springBootDependencies": [],
+      "setup": "Configure the SMTP host and sender address before enabling `base.mail.smtp.enabled`. Supply SMTP credentials through your deployment environment if required."
+    },
+    "phone": {
+      "label": "Phone authentication",
+      "artifact": "base-auth-phone-starter",
+      "requires": [
+        "auth"
+      ],
+      "flags": {
+        "base.auth.phone.enabled": false,
+        "base.auth.phone.otp.enabled": false
+      },
+      "kind": "starter",
+      "description": "Persist verified phone identities and opt in to SMS challenges.",
+      "springBootDependencies": [],
+      "setup": "Apply the phone authentication migrations and supply an SMS sender before enabling OTP."
+    },
+    "websocket": {
+      "label": "STOMP WebSocket",
+      "artifact": "base-websocket-starter",
+      "requires": [
+        "web",
+        "security"
+      ],
+      "flags": {
+        "base.websocket.enabled": false
+      },
+      "kind": "starter",
+      "description": "Single-server STOMP messaging over WebSocket.",
+      "springBootDependencies": [
+        "spring-boot-starter-websocket"
+      ],
+      "setup": "Configure trusted origins and message authorization before enabling `base.websocket.enabled`."
+    },
+    "mcp": {
+      "label": "MCP server",
+      "artifact": "base-mcp-server-starter",
+      "requires": [
+        "web",
+        "security"
+      ],
+      "flags": {
+        "base.mcp.server.enabled": false
+      },
+      "kind": "starter",
+      "description": "Optional Spring AI MCP HTTP endpoint with bearer-token validation.",
+      "springBootDependencies": [
+        "spring-boot-starter-security",
+        "spring-boot-starter-oauth2-resource-server"
+      ],
+      "setup": "Configure the issuer and resource URI and keep a protected fallback security chain before enabling `base.mcp.server.enabled`."
+    },
+    "mail": {
+      "label": "Email contracts",
+      "artifact": "base-mail",
+      "kind": "library",
+      "description": "Outbound email interfaces and templates.",
+      "springBootDependencies": []
+    },
+    "sms": {
+      "label": "SMS contracts",
+      "artifact": "base-sms",
+      "kind": "library",
+      "description": "Outbound SMS interfaces and message contracts.",
+      "springBootDependencies": []
+    }
   },
   "presets": {
-    "Minimal API": ["web"],
-    "Secure API": ["security"],
-    "Real-time multiplayer backend": ["websocket"]
-  }
+    "Minimal API": [
+      "web"
+    ],
+    "Secure API": [
+      "security"
+    ],
+    "Real-time multiplayer backend": [
+      "websocket"
+    ]
+  },
+  "databases": [
+    "none",
+    "postgresql"
+  ]
 }
