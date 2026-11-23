@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "base.auth.token.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable access-token and refresh-session services."
+    }
+  ]
+}

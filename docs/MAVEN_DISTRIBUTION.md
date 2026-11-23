@@ -69,3 +69,11 @@ The [standalone web consumer](../verification/web-consumer/pom.xml) builds and s
 Set the same release version in the reactor parent, each module's parent reference, and the standalone BOM. Use an immutable tag such as `v1.0.0-rc.1` on that commit. Run the **Verify a Base release candidate** workflow with the tag. The workflow checks the version alignment and prints the Java and Spring Boot baselines for the release notes, then runs the full reactor verification and temporary staging build on that tag.
 
 Keep the release notes and deployment tied to the verified commit. If verification or staging fails, resolve the failure before promoting a candidate. After an artifact version is publicly available, use a new version for changes. See the [release version and immutability policy](#version-rules).
+
+## Tested starter compatibility
+
+| Java | Spring Boot | Spring Security | Spring AI |
+| --- | --- | --- | --- |
+| 25 | 4.1.2 | 7.1.2 | 2.0.3 |
+
+The standalone consumer checks resolved versions from a staged Maven repository. The starter matrix starts a plain Boot MVC context, then starts an external context with all starters present and exercises the combination of JPA auditing, local identities, WebSocket, and MCP. The scoped MCP chain and the application's default chain both have to protect their own routes. Update the matrix and release notes when qualifying a new baseline.

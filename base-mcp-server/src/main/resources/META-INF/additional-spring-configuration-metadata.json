@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "base.mcp.server.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable the authenticated MCP endpoint."
+    }
+  ]
+}
