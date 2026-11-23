@@ -22,7 +22,7 @@ Use a server-side session for a same-origin browser application. Enable `base-au
    export SPRING_PROFILES_ACTIVE=dev,auth-token,oauth2-google
 
    mvn -pl demo-app -am package
-   java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
+   java -jar demo-app/target/demo-app-0.1.0-M1.jar
    ```
 
 4. Open `/oauth2/authorization/google` on the registered origin and sign in. Confirm the session is active by opening `/api/example/me` on the same origin. Use that browser session for the issue request below. Run `mvn clean verify` with Docker to exercise the flow in CI-style tests using generated keys and test identities.
@@ -31,7 +31,7 @@ To return to session-only mode, remove `auth-token` from the active profiles and
 
 ## Configure a consuming application
 
-Add `com.notshahrad:base-auth-token` to the application dependencies. Use the reactor's managed version or the published version matching the other base modules. Enable `base.auth.token.enabled` and import `AccessTokenConfiguration` if component scanning does not find it. Configure the Spring JDBC datasource and transaction manager against the same PostgreSQL database that stores local users. Apply the token migrations through the consuming application's Flyway history. Expose token issuance only after trusted application authentication establishes a `LocalUserPrincipal`.
+Add `io.github.shahradbagheri:base-auth-token` to the application dependencies. Use the reactor's managed version or the published version matching the other base modules. Enable `base.auth.token.enabled` and import `AccessTokenConfiguration` if component scanning does not find it. Configure the Spring JDBC datasource and transaction manager against the same PostgreSQL database that stores local users. Apply the token migrations through the consuming application's Flyway history. Expose token issuance only after trusted application authentication establishes a `LocalUserPrincipal`.
 
 Give the bearer chain an explicit route matcher and priority over the application's browser/session chain. For example, this configuration secures `GET /api/mobile/me` if the consuming app provides that endpoint. Session-authenticated CSRF and issuance handlers belong in the browser chain.
 

@@ -2,7 +2,7 @@
 
 ## Use the security starter
 
-Import `spring-boot-base-bom` and declare `com.notshahrad:base-security-starter` to use the servlet API defaults. The default chain requires authentication for application routes, permits GET and HEAD health checks, retains CSRF protection, and responds with `ApiError` on authentication and authorization failures. The application supplies its authentication mechanism.
+Import `spring-boot-base-bom` and declare `io.github.shahradbagheri:base-security-starter` to use the servlet API defaults. The default chain requires authentication for application routes, permits GET and HEAD health checks, retains CSRF protection, and responds with `ApiError` on authentication and authorization failures. The application supplies its authentication mechanism.
 
 A consumer-provided `SecurityFilterChain` replaces the default. When using multiple scoped chains, the application must include a fallback covering every remaining route. A consumer-provided `SecurityExceptionHandler` replaces the MVC advice. The application can enable method security in its own configuration when supplying the chains.
 

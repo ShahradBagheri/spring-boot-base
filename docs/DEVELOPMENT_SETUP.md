@@ -37,7 +37,7 @@ Start Docker, then run:
 mvn clean verify
 ```
 
-Maven runs the entire reactor, Failsafe tests using disposable PostgreSQL Testcontainers, Flyway migrations, Hibernate schema validation, and builds `demo-app/target/demo-app-0.0.1-SNAPSHOT.jar`.
+Maven runs the entire reactor, Failsafe tests using disposable PostgreSQL Testcontainers, Flyway migrations, Hibernate schema validation, and builds `demo-app/target/demo-app-0.1.0-M1.jar`.
 
 If Docker is unavailable, `mvn clean test` is the fast fallback, **not** a substitute for a passing full verification workflow. GitHub Actions performs the full verification and also launches the packaged app against its own PostgreSQL service.
 
@@ -75,7 +75,7 @@ For a **local build with Docker available**:
 
 ```bash
 mvn clean package
-java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
+java -jar demo-app/target/demo-app-0.1.0-M1.jar
 ```
 
 For a package-only build **without Docker**, Maven's `package` phase runs fast tests but not Failsafe's `integration-test`/`verify` phases. Perform `mvn clean verify` before merging code that changes persistence.

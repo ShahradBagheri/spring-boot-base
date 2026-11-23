@@ -5,14 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.notshahrad</groupId>
+        <groupId>io.github.shahradbagheri</groupId>
         <artifactId>spring-boot-base</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.0-M1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>base-mcp-server</artifactId>
     <name>Base MCP Server</name>
+    <description>Spring AI MCP HTTP server and opt-in bearer token security</description>
 
     <properties>
         <spring-ai.version>2.0.3</spring-ai.version>

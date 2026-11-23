@@ -13,14 +13,21 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.notshahrad</groupId>
+    <groupId>io.github.shahradbagheri</groupId>
     <artifactId>spring-boot-base</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-M1</version>
     <packaging>pom</packaging>
 
     <name>Spring Boot Base</name>
     <description>Reusable Spring Boot application foundation</description>
     <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
     <developers>
         <developer>
             <id>ShahradBagheri</id>
@@ -73,127 +80,127 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-websocket</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-websocket-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-mcp-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-mcp-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-data-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-data-jpa-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-web-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-security-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-oauth2</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-oauth2-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-token</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-token-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-email</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-email-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-mail-smtp</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-mail-smtp-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-phone</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-auth-phone-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.notshahrad</groupId>
+                <groupId>io.github.shahradbagheri</groupId>
                 <artifactId>base-sms</artifactId>
                 <version>${project.version}</version>
             </dependency>

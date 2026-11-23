@@ -1,6 +1,6 @@
 # Standalone consumption audit
 
-Baseline: Spring Boot 4.1.2, Java 25, and the reactor after [PR #153](https://github.com/ShahradBagheri/spring-boot-base/pull/153). The current Maven coordinates are `com.notshahrad:<artifact>:0.0.1-SNAPSHOT`. The root `spring-boot-base` POM inherits Boot's starter parent and manages shared versions across the reactor. Only `base-mcp-server` imports the Spring AI 2.0.3 BOM. An external Maven build needs this parent POM available for library dependency resolution today. The consumer can use its own parent.
+Baseline: Spring Boot 4.1.2, Java 25. The current Maven coordinates are `io.github.shahradbagheri:<artifact>:0.1.0-M1`. The root `spring-boot-base` POM inherits Boot's starter parent and manages shared versions across the reactor. Only `base-mcp-server` imports the Spring AI 2.0.3 BOM. An external Maven build needs this parent POM available for library dependency resolution today. The consumer can use its own parent.
 
 The matrices cover production POM dependencies and source-level wiring. Test dependencies stay scoped to the reactor. See [the module guide](MODULES.md) for the existing build and extension workflow.
 

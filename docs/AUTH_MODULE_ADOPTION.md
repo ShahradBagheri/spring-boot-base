@@ -4,7 +4,7 @@ A consuming service owns its PostgreSQL schema, Flyway history, HTTP endpoints a
 
 ## Enable local identities with the starter
 
-Import `spring-boot-base-bom` and declare `com.notshahrad:base-auth-starter`. Set `base.auth.local.enabled=true` and enable JPA auditing with `base.data.jpa.auditing.enabled=true` or an application auditing configuration.
+Import `spring-boot-base-bom` and declare `io.github.shahradbagheri:base-auth-starter`. Set `base.auth.local.enabled=true` and enable JPA auditing with `base.data.jpa.auditing.enabled=true` or an application auditing configuration.
 
 The starter adds the local auth package to Spring Boot's default entity and repository discovery alongside the application's own package. If the application uses explicit `@EntityScan` or `@EnableJpaRepositories` declarations, include the packages of `AppUser` and `AppUserRepository` in those declarations.
 
@@ -39,7 +39,7 @@ V1 belongs to the demo settings example. V9 belongs to the optional guest draft 
 
 ## Example: email/password in a separate service
 
-1. From this repository, run `mvn -pl base-auth-email -am install` to install the parent POM, email library and its reactor dependencies locally. In the consuming service declare `com.notshahrad:base-auth-email:0.0.1-SNAPSHOT`. For a shared build, publish those artifacts to a Maven repository accessible to the service.
+1. From this repository, run `mvn -pl base-auth-email -am install` to install the parent POM, email library and its reactor dependencies locally. In the consuming service declare `io.github.shahradbagheri:base-auth-email:0.1.0-M1`. For a shared build, publish those artifacts to a Maven repository accessible to the service.
 2. Add `org.springframework.boot:spring-boot-starter-flyway`, `org.flywaydb:flyway-database-postgresql` and the runtime driver `org.postgresql:postgresql`. Configure the service's PostgreSQL datasource.
 3. Copy the V2, V5 and V6 SQL scripts into the service's `src/main/resources/db/migration/`. For a new history, the original numbers can be retained. For an existing Flyway history, inspect existing tables and assign the next unused versions **before** applying the scripts. For example, a service at V12 can adopt them as V13, V14 and V15. Preserve the constraints and indexes. Once applied, keep those files immutable and bring future upstream schema changes into the service as new migrations.
 4. Register the email components, auth entities, repositories and auditing configuration. For a service outside the library package tree, the following annotations can go on an application-owned configuration class. Include the service's own entity and repository packages in the respective scans if it has them.

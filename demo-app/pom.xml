@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.notshahrad</groupId>
+        <groupId>io.github.shahradbagheri</groupId>
         <artifactId>spring-boot-base</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.0-M1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -26,51 +26,51 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-websocket</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-mcp-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-auth</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-auth-oauth2</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-auth-token</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-auth-email</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-mail-smtp</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-mail</artifactId>
         </dependency>
         <dependency>
@@ -78,11 +78,11 @@
             <artifactId>caffeine</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-auth-phone</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-sms</artifactId>
         </dependency>
         <dependency>

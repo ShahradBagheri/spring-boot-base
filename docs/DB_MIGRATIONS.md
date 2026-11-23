@@ -42,7 +42,7 @@ This table is intended for non-secret application settings, not passwords or oth
 
 1. Create a **new, empty PostgreSQL database**, such as `base_project`.
 2. Set `SPRING_PROFILES_ACTIVE=dev`, `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` for the database.
-3. Run `mvn clean package` and then `java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar`.
+3. Run `mvn clean package` and then `java -jar demo-app/target/demo-app-0.1.0-M1.jar`.
 4. Flyway creates its schema history table, applies all pending migrations in order, and records each successful migration. Hibernate validates the resulting schema.
 5. On subsequent startups, Flyway verifies the migration history but skips migrations that have already run.
 
