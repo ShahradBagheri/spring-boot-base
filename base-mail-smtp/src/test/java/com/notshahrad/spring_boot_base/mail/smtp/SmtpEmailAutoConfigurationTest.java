@@ -8,9 +8,11 @@ import com.notshahrad.spring_boot_base.mail.EmailSender;
 import jakarta.mail.Multipart;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -22,6 +24,22 @@ class SmtpEmailAutoConfigurationTest {
     @Test
     void disabledConfigurationRequiresNoCredentialsOrTransport() {
         application.run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(EmailSender.class));
+    }
+
+    @Test
+    void enabledConfigurationBacksOffWithoutJakartaMail() {
+        application.withClassLoader(new FilteredClassLoader("jakarta.mail"))
+                .withPropertyValues("base.mail.smtp.enabled=true")
+                .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(EmailSender.class));
+    }
+
+    @Test
+    void publishesBoundPropertyAndActivationMetadata() throws Exception {
+        try (var metadata = getClass().getResourceAsStream("/META-INF/spring-configuration-metadata.json")) {
+            assertThat(metadata).isNotNull();
+            assertThat(new String(metadata.readAllBytes(), UTF_8))
+                    .contains("base.mail.smtp.host", "base.mail.smtp.enabled");
+        }
     }
 
     @Test

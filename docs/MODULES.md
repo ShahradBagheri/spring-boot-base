@@ -228,6 +228,8 @@ For auth libraries, follow [the standalone adoption guide](AUTH_MODULE_ADOPTION.
 
 ## Add a new optional module
 
+For starter modules, follow the [starter and auto-configuration conventions](STARTER_CONVENTIONS.md).
+
 Do not create a placeholder module until its functionality is ready. When adding one:
 
 1. Decide whether the capability is a framework-independent library, a framework integration, or application-only code.
