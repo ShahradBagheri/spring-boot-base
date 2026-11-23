@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "java": "25",
+  "springBoot": "4.1.2",
+  "features": {
+    "core": {"label": "Core contracts", "artifact": "base-core", "kind": "library"},
+    "web": {"label": "REST API", "artifact": "base-web-starter"},
+    "jpa": {"label": "Data JPA", "artifact": "base-data-jpa-starter", "flags": {"base.data.jpa.auditing.enabled": true}},
+    "security": {"label": "Servlet security", "artifact": "base-security-starter", "requires": ["web"]},
+    "auth": {"label": "Local identities", "artifact": "base-auth-starter", "requires": ["jpa"], "flags": {"base.auth.local.enabled": false}},
+    "token": {"label": "Access and refresh tokens", "artifact": "base-auth-token-starter", "requires": ["auth", "security"], "flags": {"base.auth.token.enabled": false}},
+    "oidc": {"label": "OIDC login", "artifact": "base-auth-oauth2-starter", "requires": ["auth", "security"], "flags": {"base.auth.oauth2.enabled": false}},
+    "email": {"label": "Email authentication", "artifact": "base-auth-email-starter", "requires": ["auth"], "flags": {"base.auth.email.enabled": false, "base.auth.email.password-enabled": false}},
+    "smtp": {"label": "SMTP delivery", "artifact": "base-mail-smtp-starter", "flags": {"base.mail.smtp.enabled": false}},
+    "phone": {"label": "Phone authentication", "artifact": "base-auth-phone-starter", "requires": ["auth"], "flags": {"base.auth.phone.enabled": false, "base.auth.phone.otp.enabled": false}},
+    "websocket": {"label": "STOMP WebSocket", "artifact": "base-websocket-starter", "requires": ["web", "security"], "flags": {"base.websocket.enabled": false}},
+    "mcp": {"label": "MCP server", "artifact": "base-mcp-server-starter", "requires": ["web", "security"], "flags": {"base.mcp.server.enabled": false}}
+  },
+  "presets": {
+    "Minimal API": ["web"],
+    "Secure API": ["security"],
+    "Real-time multiplayer backend": ["websocket"]
+  }
+}
