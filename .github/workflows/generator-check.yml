@@ -1,0 +1,43 @@
+name: Verify generated projects
+
+on:
+  push:
+    paths: ['generator/**', '.github/workflows/generator-check.yml']
+  pull_request:
+    paths: ['generator/**', '.github/workflows/generator-check.yml']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      base-version:
+        description: Released Base version already available in Maven Central
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Test catalog, archive generation, and download API
+        run: python3 -m unittest discover -s generator -v
+      - name: Stage Base artifacts and build all generated projects
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          stage="${RUNNER_TEMP}/generator-maven-staging"
+          mvn -B -ntp -DskipTests -DskipITs \
+            "-DaltDeploymentRepository=publication-test::file://$stage" deploy
+          read -r base_group base_version <<< "$(python3 -c 'import xml.etree.ElementTree as E; p = E.parse("spring-boot-base-bom/pom.xml"); ns = {"m": "http://maven.apache.org/POM/4.0.0"}; print(p.findtext("m:groupId", namespaces=ns), p.findtext("m:version", namespaces=ns))')"
+          python3 generator/verify_projects.py --group "$base_group" --version "$base_version" --repository "$stage"
+      - name: Build all generated projects from Maven Central
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        env:
+          BASE_VERSION: ${{ inputs.base-version || github.event.release.tag_name }}
+        run: python3 generator/verify_projects.py --version "${BASE_VERSION#v}"
