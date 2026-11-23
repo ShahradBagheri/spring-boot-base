@@ -17,14 +17,14 @@ def revision(ref):
     ).strip()
 
 
-def verify(tag):
+def verify(tag, candidate=False):
     if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?", tag):
         raise SystemExit("Use a release tag such as v1.0.0 or v1.0.0-rc.1.")
     version = tag[1:]
     if version.upper().endswith("-SNAPSHOT"):
         raise SystemExit("Release tags require an immutable version.")
-    commit = revision(f"refs/tags/{tag}^{{commit}}")
-    if commit != revision("HEAD"):
+    commit = revision("HEAD")
+    if not candidate and revision(f"refs/tags/{tag}^{{commit}}") != commit:
         raise SystemExit(f"Check out {tag} before verifying its release.")
 
     root = ET.parse(ROOT / "pom.xml")
@@ -56,4 +56,8 @@ def verify(tag):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("tag")
-    verify(parser.parse_args().tag)
+    parser.add_argument(
+        "--candidate", action="store_true", help="Check HEAD before creating its release tag."
+    )
+    args = parser.parse_args()
+    verify(args.tag, args.candidate)

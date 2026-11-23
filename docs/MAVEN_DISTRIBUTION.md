@@ -4,7 +4,7 @@ Spring Boot Base will distribute public releases through Maven Central using Son
 
 ## Coordinates and artifact names
 
-The selected public groupId is `io.github.shahradbagheri`, based on the [repository owner's GitHub account](https://github.com/ShahradBagheri). Confirm the exact namespace and publishing access in Central Portal before the coordinate cutover. Make the cutover once across the parent, BOM, libraries, starters, and their dependency references before the first public milestone. The existing source reactor still uses `com.notshahrad`. Java package names and consumer imports are independent of the Maven groupId.
+The parent, BOM, libraries, and starters use the verified Maven Central namespace `io.github.shahradbagheri`. Their first release candidate is `0.1.0-M1`. The Maven groupId is independent of Java package names and consumer imports.
 
 | Artifact type | Artifact IDs |
 | --- | --- |
@@ -45,9 +45,9 @@ An existing app that vendors or clones the reactor can stay on its current commi
 
 ## Publishing prerequisites
 
-1. Sign in to Central Portal with the repository owner's GitHub identity and confirm the intended namespace is **Verified**. GitHub sign-in normally provisions the personal `io.github.<username>` namespace. Use the exact namespace shown by the Portal. If provisioning fails, follow Sonatype's GitHub namespace instructions before changing source coordinates. Ownership verification in the account remains pending. [Central Portal namespace guide](https://central.sonatype.org/register/namespace/#github-namespaces)
+1. Central Portal has verified the `io.github.shahradbagheri` namespace. Create the publishing token under an account with access to that namespace. [Central Portal namespace guide](https://central.sonatype.org/register/namespace/#github-namespaces)
 2. Prepare a Central Portal publishing token and a PGP signing key, and make the signing public key available for Central validation. Store the publishing credentials and private signing material in protected CI secrets when implementing publishing. [Portal token guide](https://central.sonatype.org/publish/generate-portal-token/) · [Signing requirements](https://central.sonatype.org/publish/requirements/gpg/)
-3. Adopt Apache License 2.0 for public releases after the repository owner approves the grant. Add the repository license text and matching POM metadata before publication, and preserve any applicable third-party notices. The current repository has no license file. [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+3. The repository and its Maven metadata use Apache License 2.0. Preserve applicable third-party notices in any release. [Repository license](../LICENSE)
 4. Assemble release POMs with project, developer, license and SCM metadata, plus sources and Javadoc for published JARs and signatures and checksums for the deployment. Validate in Central Portal before releasing. Test the published artifacts from an external app and a clean Maven cache. [Central publishing requirements](https://central.sonatype.org/publish/requirements/) · [Publishing issue #172](https://github.com/ShahradBagheri/spring-boot-base/issues/172) · [External consumer issue #174](https://github.com/ShahradBagheri/spring-boot-base/issues/174)
 
 ## Verify the artifacts locally
@@ -87,9 +87,10 @@ The standalone consumer checks resolved versions from a staged Maven repository.
    `CENTRAL_USERNAME`, `CENTRAL_TOKEN`, `CENTRAL_GPG_PRIVATE_KEY`, and
    `CENTRAL_GPG_PASSPHRASE` as environment secrets. Publish the signing public key
    to a Central-supported keyserver so Central can verify signatures.
-3. Dispatch **Stage a release in Maven Central Portal** with the release tag. The
-   workflow verifies the exact commit, runs the full reactor and staged consumer
-   checks, and uploads one signed release bundle. The Portal retains control of
+3. Dispatch **Stage a release in Maven Central Portal** from `master` with the
+   release tag. Select **Create the tag** for a new release. The workflow verifies
+   the exact commit and runs the full reactor and staged consumer checks before
+   creating the tag and uploading a signed bundle. The Portal retains control of
    the public publish step. Review and publish the validated deployment there.
 4. Confirm the BOM and starters resolve publicly, then publish the GitHub release
    to trigger the standalone consumer and generator checks.

@@ -1,6 +1,6 @@
 # Outbound SMTP delivery
 
-Import `spring-boot-base-bom` and add `com.notshahrad:base-mail-smtp-starter` to your application's dependencies. The starter includes the SMTP adapter and `base-mail` contracts. The demo application already carries the adapter. It starts with email delivery disabled and needs no SMTP settings in that mode. Set `base.mail.smtp.enabled=true` to register the adapter as an `EmailSender`. Supplying your own `EmailSender` bean takes precedence, even when SMTP is enabled.
+Import `spring-boot-base-bom` and add `io.github.shahradbagheri:base-mail-smtp-starter` to your application's dependencies. The starter includes the SMTP adapter and `base-mail` contracts. The demo application already carries the adapter. It starts with email delivery disabled and needs no SMTP settings in that mode. Set `base.mail.smtp.enabled=true` to register the adapter as an `EmailSender`. Supplying your own `EmailSender` bean takes precedence, even when SMTP is enabled.
 
 SMTP delivery is independent of email/password authentication. Inject `EmailSender` into application services that send notifications. The adapter uses the configured sender mailbox and supports plain text, HTML, or both as MIME alternatives.
 
@@ -46,7 +46,7 @@ emailSender.send(new EmailMessage(
         null));
 ```
 
-The embedded SMTP test exercises MIME delivery to a local catcher without outbound network calls. Consumers can also inject `RecordingEmailSender` from the `base-mail` test artifact for tests without sockets.
+The embedded SMTP test exercises MIME delivery to a local catcher without outbound network calls. When using a locally installed reactor, consumers can also inject `RecordingEmailSender` from the `base-mail` test artifact for tests without sockets.
 
 [Mailpit Docker instructions](https://mailpit.axllent.org/docs/install/docker/)
 

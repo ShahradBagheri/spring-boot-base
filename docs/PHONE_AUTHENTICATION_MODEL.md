@@ -31,7 +31,7 @@ SMS possession can change after a SIM swap, number port, or reassignment. Provid
 
 `base-sms` supplies a framework-independent `SmsSender` contract and a single-recipient `SmsMessage`. Supply an adapter through application configuration when integrating delivery. Keep provider URLs, API credentials, and sender IDs in external configuration or secret storage. Avoid logging full destination numbers, raw verification codes, or message text.
 
-For tests, use the matching `com.notshahrad:base-sms` version with Maven type `test-jar`, classifier `tests`, and test scope. Inject `RecordingSmsSender` to capture message snapshots in memory. It opens no provider connection.
+For tests against a locally installed reactor, use the matching `io.github.shahradbagheri:base-sms` version with Maven type `test-jar`, classifier `tests`, and test scope. Inject `RecordingSmsSender` to capture message snapshots in memory. It opens no provider connection.
 
 ## One-time-code lifecycle
 

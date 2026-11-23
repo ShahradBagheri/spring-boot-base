@@ -1,6 +1,6 @@
 # STOMP over WebSocket
 
-Import `spring-boot-base-bom` and add `com.notshahrad:base-websocket-starter` to your servlet app and set `base.websocket.enabled=true`. The module registers `/ws`, dispatches `/app` messages to application controllers, and uses an in-memory broker for `/topic` subscriptions on a single server. Browser clients use the same origin by default. Configure individual trusted origins through the list property `base.websocket.allowed-origins`.
+Import `spring-boot-base-bom` and add `io.github.shahradbagheri:base-websocket-starter` to your servlet app and set `base.websocket.enabled=true`. The module registers `/ws`, dispatches `/app` messages to application controllers, and uses an in-memory broker for `/topic` subscriptions on a single server. Browser clients use the same origin by default. Configure individual trusted origins through the list property `base.websocket.allowed-origins`.
 
 ## Try the demo
 

@@ -6,22 +6,22 @@ This guide describes the modules that exist in the repository today and how to a
 
 | Path | Maven artifact | Responsibilities |
 | --- | --- | --- |
-| `base-core/` | `com.notshahrad:base-core:0.0.1-SNAPSHOT` | Framework-independent exceptions and shared application contracts |
-| `base-data-jpa/` | `com.notshahrad:base-data-jpa:0.0.1-SNAPSHOT` | JPA mapped superclass `BaseEntity`, UUID identifier, timestamps, optimistic-lock version and deletion metadata, and opt-in auditing configuration |
-| `base-web/` | `com.notshahrad:base-web:0.0.1-SNAPSHOT` | Reusable API response contracts and Spring MVC exception mapping |
-| `base-websocket/` | `com.notshahrad:base-websocket:0.0.1-SNAPSHOT` | Optional WebSocket transport and single-instance STOMP broker |
-| `base-security/` | `com.notshahrad:base-security:0.0.1-SNAPSHOT` | Optional Spring Security baseline, authentication/authorization error responses and method security |
-| `base-auth/` | `com.notshahrad:base-auth:0.0.1-SNAPSHOT` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
-| `base-auth-oauth2/` | `com.notshahrad:base-auth-oauth2:0.0.1-SNAPSHOT` | Optional OAuth2 Client / OIDC authorization-code integration with Google and Apple registrations |
-| `base-auth-token/` | `com.notshahrad:base-auth-token:0.0.1-SNAPSHOT` | Optional first-party access JWT issuance, validation, and signing-key rotation |
-| `base-auth-email/` | `com.notshahrad:base-auth-email:0.0.1-SNAPSHOT` | Optional email/password identities, authentication, and challenge templates |
-| `base-mail/` | `com.notshahrad:base-mail:0.0.1-SNAPSHOT` | Framework-independent outbound email contracts, templates, and notification dispatch |
-| `base-mail-smtp/` | `com.notshahrad:base-mail-smtp:0.0.1-SNAPSHOT` | Optional Spring Boot adapter for SMTP delivery |
-| `base-auth-phone/` | `com.notshahrad:base-auth-phone:0.0.1-SNAPSHOT` | Optional verified E.164 phone login identities |
-| `base-sms/` | `com.notshahrad:base-sms:0.0.1-SNAPSHOT` | Framework-independent SMS message and sender contracts |
-| `base-mcp-server/` | `com.notshahrad:base-mcp-server:0.0.1-SNAPSHOT` | Optional MCP transport and bearer-token security |
-| `demo-app/` | `com.notshahrad:demo-app:0.0.1-SNAPSHOT` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
-| `pom.xml` at repository root | `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
+| `base-core/` | `io.github.shahradbagheri:base-core:0.1.0-M1` | Framework-independent exceptions and shared application contracts |
+| `base-data-jpa/` | `io.github.shahradbagheri:base-data-jpa:0.1.0-M1` | JPA mapped superclass `BaseEntity`, UUID identifier, timestamps, optimistic-lock version and deletion metadata, and opt-in auditing configuration |
+| `base-web/` | `io.github.shahradbagheri:base-web:0.1.0-M1` | Reusable API response contracts and Spring MVC exception mapping |
+| `base-websocket/` | `io.github.shahradbagheri:base-websocket:0.1.0-M1` | Optional WebSocket transport and single-instance STOMP broker |
+| `base-security/` | `io.github.shahradbagheri:base-security:0.1.0-M1` | Optional Spring Security baseline, authentication/authorization error responses and method security |
+| `base-auth/` | `io.github.shahradbagheri:base-auth:0.1.0-M1` | Optional local user identities, issuer/subject provider mapping, and transactional account provisioning |
+| `base-auth-oauth2/` | `io.github.shahradbagheri:base-auth-oauth2:0.1.0-M1` | Optional OAuth2 Client / OIDC authorization-code integration with Google and Apple registrations |
+| `base-auth-token/` | `io.github.shahradbagheri:base-auth-token:0.1.0-M1` | Optional first-party access JWT issuance, validation, and signing-key rotation |
+| `base-auth-email/` | `io.github.shahradbagheri:base-auth-email:0.1.0-M1` | Optional email/password identities, authentication, and challenge templates |
+| `base-mail/` | `io.github.shahradbagheri:base-mail:0.1.0-M1` | Framework-independent outbound email contracts, templates, and notification dispatch |
+| `base-mail-smtp/` | `io.github.shahradbagheri:base-mail-smtp:0.1.0-M1` | Optional Spring Boot adapter for SMTP delivery |
+| `base-auth-phone/` | `io.github.shahradbagheri:base-auth-phone:0.1.0-M1` | Optional verified E.164 phone login identities |
+| `base-sms/` | `io.github.shahradbagheri:base-sms:0.1.0-M1` | Framework-independent SMS message and sender contracts |
+| `base-mcp-server/` | `io.github.shahradbagheri:base-mcp-server:0.1.0-M1` | Optional MCP transport and bearer-token security |
+| `demo-app/` | `io.github.shahradbagheri:demo-app:0.1.0-M1` | Runnable Spring Boot application consuming selected libraries, features, PostgreSQL migrations and integration tests |
+| `pom.xml` at repository root | `io.github.shahradbagheri:spring-boot-base:0.1.0-M1` | Parent POM, Maven reactor aggregator and dependency/plugin version management |
 
 The root has `<packaging>pom</packaging>`. Only `demo-app` applies the Spring Boot Maven plugin to build an executable JAR. Library modules produce ordinary JAR files.
 
@@ -151,7 +151,7 @@ With a PostgreSQL database and environment variables configured, from the reposi
 
 ```bash
 mvn clean package
-java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
+java -jar demo-app/target/demo-app-0.1.0-M1.jar
 ```
 
 Environment variables read by the development application profile:
@@ -174,11 +174,11 @@ Its [POM](../demo-app/pom.xml) has explicit project dependencies managed by the 
 
 ```xml
 <dependency>
-    <groupId>com.notshahrad</groupId>
+    <groupId>io.github.shahradbagheri</groupId>
     <artifactId>base-core</artifactId>
 </dependency>
 <dependency>
-    <groupId>com.notshahrad</groupId>
+    <groupId>io.github.shahradbagheri</groupId>
     <artifactId>base-data-jpa</artifactId>
 </dependency>
 ```
@@ -203,9 +203,9 @@ Keep your application's Spring Boot parent and import `spring-boot-base-bom` in 
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>spring-boot-base-bom</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.1.0-M1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -214,7 +214,7 @@ Keep your application's Spring Boot parent and import `spring-boot-base-bom` in 
 
 <dependencies>
     <dependency>
-        <groupId>com.notshahrad</groupId>
+        <groupId>io.github.shahradbagheri</groupId>
         <artifactId>base-core</artifactId>
     </dependency>
 </dependencies>
@@ -228,7 +228,7 @@ For auth libraries, follow [the standalone adoption guide](AUTH_MODULE_ADOPTION.
 
 ## Use the JPA starter in a separate application
 
-Import `spring-boot-base-bom` and declare `com.notshahrad:base-data-jpa-starter` without a separate version. Supply your database driver, datasource settings, and schema or migrations in the application.
+Import `spring-boot-base-bom` and declare `io.github.shahradbagheri:base-data-jpa-starter` without a separate version. Supply your database driver, datasource settings, and schema or migrations in the application.
 
 Set `base.data.jpa.auditing.enabled=true` to let the starter populate `BaseEntity` timestamps. Auditing defaults to disabled. The inherited timestamp columns are required, so enable the starter's auditing or provide your own JPA auditing before persisting these entities. A consumer's existing `@EnableJpaAuditing` configuration takes precedence. If the starter enables auditing, it uses the application's `AuditorAware<String>` bean by type for actor attribution. Without a provider, the actor columns remain empty.
 
@@ -242,7 +242,7 @@ Do not create a placeholder module until its functionality is ready. When adding
 
 1. Decide whether the capability is a framework-independent library, a framework integration, or application-only code.
 2. Create a sibling directory (for example `base-security/`) with its own `pom.xml` and source/test directories.
-3. Use `com.notshahrad:spring-boot-base:0.0.1-SNAPSHOT` as its Maven parent and `../pom.xml` as `relativePath`.
+3. Use `io.github.shahradbagheri:spring-boot-base:0.1.0-M1` as its Maven parent and `../pom.xml` as `relativePath`.
 4. Add the new directory to the root `<modules>` list so Maven includes it in the reactor.
 5. Declare only the dependencies that module needs. Add a root `<dependencyManagement>` entry if useful for reactor consumers. Add each publishable library or starter to the consumer BOM.
 6. Add an explicit dependency only in the consuming application(s) that need that feature; keep `base-core` and unrelated modules independent.

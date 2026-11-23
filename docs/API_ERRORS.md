@@ -8,7 +8,7 @@ Import `spring-boot-base-bom` and add the starter to your servlet application's 
 
 ```xml
 <dependency>
-    <groupId>com.notshahrad</groupId>
+    <groupId>io.github.shahradbagheri</groupId>
     <artifactId>base-web-starter</artifactId>
 </dependency>
 ```

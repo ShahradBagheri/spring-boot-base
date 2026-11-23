@@ -25,7 +25,7 @@ Run from the repository root:
 
 ```powershell
 mvn clean package
-java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
+java -jar demo-app/target/demo-app-0.1.0-M1.jar
 ```
 
 The application-specific datasource configuration is in `src/main/resources/application-dev.yaml`. The shared server port and active profile defaults are in `application.yaml`. No database credentials are committed.

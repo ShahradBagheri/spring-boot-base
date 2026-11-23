@@ -2,9 +2,9 @@ name: Verify generated projects
 
 on:
   push:
-    paths: ['generator/**', '.github/workflows/generator-check.yml']
+    paths: ['generator/**', '**/pom.xml', '.github/workflows/generator-check.yml']
   pull_request:
-    paths: ['generator/**', '.github/workflows/generator-check.yml']
+    paths: ['generator/**', '**/pom.xml', '.github/workflows/generator-check.yml']
   release:
     types: [published]
   workflow_dispatch:

@@ -126,7 +126,7 @@ $env:DB_USERNAME = "postgres"
 $env:DB_PASSWORD = "your-local-password"
 $env:SERVER_PORT = "8080"
 mvn clean package
-java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar
+java -jar demo-app/target/demo-app-0.1.0-M1.jar
 ```
 
 In another terminal:

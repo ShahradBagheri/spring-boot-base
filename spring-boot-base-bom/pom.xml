@@ -4,14 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.notshahrad</groupId>
+    <groupId>io.github.shahradbagheri</groupId>
     <artifactId>spring-boot-base-bom</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-M1</version>
     <packaging>pom</packaging>
 
     <name>Spring Boot Base BOM</name>
     <description>Dependency versions for Spring Boot Base libraries and starters</description>
     <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
     <developers>
         <developer>
             <id>ShahradBagheri</id>

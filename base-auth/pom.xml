@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.notshahrad</groupId>
+        <groupId>io.github.shahradbagheri</groupId>
         <artifactId>spring-boot-base</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.0-M1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>base-auth</artifactId>
@@ -14,7 +14,7 @@
     <description>Optional local identities and external provider account mappings</description>
     <dependencies>
         <dependency>
-            <groupId>com.notshahrad</groupId>
+            <groupId>io.github.shahradbagheri</groupId>
             <artifactId>base-data-jpa</artifactId>
         </dependency>
         <dependency>
