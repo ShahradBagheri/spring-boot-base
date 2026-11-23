@@ -23,7 +23,7 @@ modules = [
 ]
 bom_module = "spring-boot-base-bom"
 
-assert set(modules) == {bom_module, "base-core", "base-data-jpa", "base-data-jpa-starter" ,"base-web", "base-web-starter", "base-websocket", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-mail-smtp-starter", "base-auth-phone", "base-sms", "base-mcp-server", "base-mcp-server-starter", "demo-app"}
+assert set(modules) == {bom_module, "base-core", "base-data-jpa", "base-data-jpa-starter" ,"base-web", "base-web-starter", "base-websocket", "base-websocket-starter", "base-security", "base-auth", "base-auth-oauth2", "base-auth-token", "base-auth-email", "base-mail", "base-mail-smtp", "base-mail-smtp-starter", "base-auth-phone", "base-sms", "base-mcp-server", "base-mcp-server-starter", "demo-app"}
 
 bom = load_pom(Path(bom_module))
 assert value(bom, "artifactId") == bom_module
@@ -78,6 +78,7 @@ for module in modules:
 assert dependencies["base-core"] == set()
 assert dependencies["base-data-jpa"].issubset({"base-core"})
 assert dependencies["base-websocket"] == set()
+assert dependencies["base-websocket-starter"] == {"base-websocket"}
 assert dependencies["base-web"] == {"base-core"}
 assert dependencies["base-web-starter"] == {"base-web"}
 assert dependencies["base-security"] == {"base-web"}
