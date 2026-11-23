@@ -52,10 +52,12 @@
         <module>base-auth-oauth2</module>
         <module>base-auth-token</module>
         <module>base-auth-email</module>
+        <module>base-auth-email-starter</module>
         <module>base-mail</module>
         <module>base-mail-smtp</module>
         <module>base-mail-smtp-starter</module>
         <module>base-auth-phone</module>
+        <module>base-auth-phone-starter</module>
         <module>base-sms</module>
         <module>base-mcp-server</module>
         <module>base-mcp-server-starter</module>
@@ -150,6 +152,11 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-email-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -166,6 +173,11 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth-phone</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-phone-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

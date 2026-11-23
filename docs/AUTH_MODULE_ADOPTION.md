@@ -10,6 +10,13 @@ The starter adds the local auth package to Spring Boot's default entity and repo
 
 The application configures its datasource and applies the local-identity schema from migration V2. The starter exposes identity persistence and `OidcIdentityService`. Pass it identities already verified by a trusted authentication adapter. Linking still requires an application-supplied `AccountLinkApproval`.
 
+## Enable email or phone authentication
+
+- Add `base-auth-email-starter` and set `base.auth.email.enabled=true`. To enable password and challenge services, also set `base.auth.email.password-enabled=true`. Apply V2 and V5 for identity storage, and V6 for password flows. Your application owns the endpoints, challenge URLs, and delivery. Send challenges using an application-provided `EmailSender` from `base-mail`; an SMTP adapter is optional.
+- Add `base-auth-phone-starter` and set `base.auth.phone.enabled=true`. For OTP, set `base.auth.phone.otp.enabled=true`, provide an HMAC key and an application `SmsSender`, and use `PhoneOtpDelivery` to send a challenge returned by `PhoneAuthService`. OTP startup requires the sender. Apply V2, V7, and V8 for OTP, and V2 and V7 for identity lookup alone. Keep destination throttling, delivery policy, and HTTP endpoints in the application.
+
+Enable local identities and auditing as described above for flows that read or write local accounts. Keep codes and tokens out of logs and HTTP responses.
+
 ## Choose the schema for your features
 
 The version numbers below identify the source scripts in the [demo migration directory](../demo-app/src/main/resources/db/migration/). For multiple features, take the union of their scripts and apply each once in source order.

@@ -38,10 +38,12 @@ assert set(modules) == {
     "base-auth-oauth2",
     "base-auth-token",
     "base-auth-email",
+    "base-auth-email-starter",
     "base-mail",
     "base-mail-smtp",
     "base-mail-smtp-starter",
     "base-auth-phone",
+    "base-auth-phone-starter",
     "base-sms",
     "base-mcp-server",
     "base-mcp-server-starter",
@@ -112,10 +114,12 @@ assert dependencies["base-auth-starter"] == {"base-auth", "base-data-jpa-starter
 assert dependencies["base-auth-oauth2"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-token"] == {"base-auth", "base-security"}
 assert dependencies["base-auth-email"] == {"base-auth"}
+assert dependencies["base-auth-email-starter"] == {"base-auth-email", "base-auth-starter", "base-mail"}
 assert dependencies["base-mail"] == set()
 assert dependencies["base-mail-smtp"] == {"base-mail"}
 assert dependencies["base-mail-smtp-starter"] == {"base-mail-smtp"}
 assert dependencies["base-auth-phone"] == {"base-auth"}
+assert dependencies["base-auth-phone-starter"] == {"base-auth-phone", "base-auth-starter", "base-sms"}
 assert dependencies["base-sms"] == set()
 assert dependencies["base-mcp-server"] == set()
 assert dependencies["base-mcp-server-starter"] == {"base-mcp-server"}
