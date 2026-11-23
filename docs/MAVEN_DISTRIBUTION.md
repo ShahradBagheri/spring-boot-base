@@ -61,3 +61,5 @@ staging=$(mktemp -d)
 mvn clean deploy "-DaltDeploymentRepository=publication-test::file://${staging}"
 python3 scripts/verify_bom_consumer.py --repository "${staging}"
 ```
+
+The [standalone web consumer](../verification/web-consumer/pom.xml) builds and starts from staged artifacts in CI. The [release verification workflow](../.github/workflows/released-consumer.yml) resolves the same fixture from Maven Central using a clean cache when a GitHub release is published, or on manual dispatch with an existing release version. Publish the artifacts and confirm Central can resolve them before publishing the GitHub release.
