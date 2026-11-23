@@ -49,12 +49,22 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>base-auth-oauth2-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>base-auth-phone</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>base-auth-token</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>base-auth-token-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -90,6 +100,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>base-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>base-security-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

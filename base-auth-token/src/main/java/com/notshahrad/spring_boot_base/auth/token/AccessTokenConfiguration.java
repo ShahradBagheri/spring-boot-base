@@ -2,6 +2,7 @@ package com.notshahrad.spring_boot_base.auth.token;
 
 import com.notshahrad.spring_boot_base.auth.AccountSessionValidator;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,17 +23,20 @@ public class AccessTokenConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     AccessTokenIssuer accessTokenIssuer(AccessTokenProperties properties, AccessTokenKeys keys) {
         return new AccessTokenIssuer(properties, keys, Clock.systemUTC());
     }
 
     @Bean
+    @ConditionalOnMissingBean
     RefreshSessionService refreshSessionService(JdbcTemplate jdbcTemplate, AccessTokenIssuer issuer,
                                                ObjectProvider<AccountSessionValidator> validators) {
         return new RefreshSessionService(new RefreshSessionStore(jdbcTemplate), issuer, Clock.systemUTC(), validators);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     AccessTokenResourceServer accessTokenResourceServer(
             AccessTokenProperties properties, AccessTokenKeys keys, JsonMapper jsonMapper) {
         var decoder = AccessTokenDecoder.create(properties, keys, Clock.systemUTC());

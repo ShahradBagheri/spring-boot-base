@@ -3,6 +3,7 @@ package com.notshahrad.spring_boot_base.auth.oauth2;
 import com.notshahrad.spring_boot_base.auth.OidcIdentityService;
 import com.notshahrad.spring_boot_base.common.response.ApiError;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,12 +24,14 @@ import tools.jackson.databind.json.JsonMapper;
 public class OidcLoginConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
     public LocalOidcUserService localOidcUserService(OidcIdentityService identityService) {
         return new LocalOidcUserService(identityService);
     }
 
     @Bean
     @Order(1)
+    @ConditionalOnMissingBean(name = "oauth2LoginFilterChain")
     public SecurityFilterChain oauth2LoginFilterChain(
             HttpSecurity http,
             ClientRegistrationRepository registrations,

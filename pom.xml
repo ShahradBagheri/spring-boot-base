@@ -45,10 +45,13 @@
         <module>base-web-starter</module>
         <module>base-websocket</module>
         <module>base-security</module>
+        <module>base-security-starter</module>
         <module>base-auth</module>
         <module>base-auth-starter</module>
         <module>base-auth-oauth2</module>
+        <module>base-auth-oauth2-starter</module>
         <module>base-auth-token</module>
+        <module>base-auth-token-starter</module>
         <module>base-auth-email</module>
         <module>base-mail</module>
         <module>base-mail-smtp</module>
@@ -106,6 +109,11 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-security-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -121,7 +129,17 @@
             </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-oauth2-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
                 <artifactId>base-auth-token</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-auth-token-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
