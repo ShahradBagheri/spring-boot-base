@@ -38,6 +38,13 @@ jobs:
             "-DaltDeploymentRepository=publication-test::file://${RUNNER_TEMP}/base-maven-staging"
       - name: Resolve staged libraries from a standalone Spring Boot POM
         run: python3 scripts/verify_bom_consumer.py --repository "${RUNNER_TEMP}/base-maven-staging"
+      - name: Build and start the standalone consumer against staged artifacts
+        run: |
+          read -r base_group base_version <<< "$(python3 -c 'import xml.etree.ElementTree as E; p = E.parse("spring-boot-base-bom/pom.xml"); ns = {"m": "http://maven.apache.org/POM/4.0.0"}; print(p.findtext("m:groupId", namespaces=ns), p.findtext("m:version", namespaces=ns))')"
+          mvn --batch-mode --no-transfer-progress -f verification/web-consumer/pom.xml \
+            "-Dmaven.repo.local=${RUNNER_TEMP}/staged-consumer-cache" \
+            "-Dbase.group=$base_group" "-Dbase.version=$base_version" \
+            "-Dbase.repository=file://${RUNNER_TEMP}/base-maven-staging" clean verify
       - name: Show failing test reports
         if: failure()
         run: |
