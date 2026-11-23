@@ -77,3 +77,29 @@ Keep the release notes and deployment tied to the verified commit. If verificati
 | 25 | 4.1.2 | 7.1.2 | 2.0.3 |
 
 The standalone consumer checks resolved versions from a staged Maven repository. The starter matrix starts a plain Boot MVC context, then starts an external context with all starters present and exercises the combination of JPA auditing, local identities, WebSocket, and MCP. The scoped MCP chain and the application's default chain both have to protect their own routes. Update the matrix and release notes when qualifying a new baseline.
+
+## Stage and publish through Central Portal
+
+1. Verify the namespace in Sonatype Central Portal, adopt the verified group in the build,
+   and commit the approved license text and POM metadata. Use a Portal publishing token
+   created by an account with access to that namespace.
+2. Set up a protected GitHub Actions environment named `maven-central` with
+   `CENTRAL_USERNAME`, `CENTRAL_TOKEN`, `CENTRAL_GPG_PRIVATE_KEY`, and
+   `CENTRAL_GPG_PASSPHRASE` as environment secrets. Publish the signing public key
+   to a Central-supported keyserver so Central can verify signatures.
+3. Dispatch **Stage a release in Maven Central Portal** with the release tag. The
+   workflow verifies the exact commit, runs the full reactor and staged consumer
+   checks, and uploads one signed release bundle. The Portal retains control of
+   the public publish step. Review and publish the validated deployment there.
+4. Confirm the BOM and starters resolve publicly, then publish the GitHub release
+   to trigger the standalone consumer and generator checks.
+
+If a workflow fails before uploading, fix the candidate and rerun from the intended
+tag. If the workflow loses its connection during upload, inspect Central Portal
+for an existing deployment before retrying. Drop an invalid unpublished deployment
+before uploading a corrected bundle. Publish a new version for any change after
+public release.
+
+Snapshots use Central's separate snapshot repository and the same Portal token when
+explicitly deployed. The protected workflow accepts immutable releases only. Consumers
+fetch public releases from Maven Central without a token.

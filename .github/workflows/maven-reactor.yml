@@ -85,7 +85,8 @@ jobs:
           DB_PASSWORD: postgres
           SERVER_PORT: '8080'
         run: |
-          java -jar demo-app/target/demo-app-0.0.1-SNAPSHOT.jar > demo-app-startup.log 2>&1 &
+          base_version="$(python3 -c 'import xml.etree.ElementTree as E; print(E.parse("spring-boot-base-bom/pom.xml").findtext("{http://maven.apache.org/POM/4.0.0}version"))')"
+          java -jar "demo-app/target/demo-app-$base_version.jar" > demo-app-startup.log 2>&1 &
           app_pid=$!
           trap 'kill "$app_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do

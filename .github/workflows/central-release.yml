@@ -1,0 +1,87 @@
+name: Stage a release in Maven Central Portal
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable release tag
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: central-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 0
+      - name: Check immutable tag, release license, and namespace
+        id: release
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 scripts/verify_release_tag.py "$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+          if not Path("LICENSE").is_file():
+              raise SystemExit("The release commit must include the approved LICENSE.")
+          for path in ("pom.xml", "spring-boot-base-bom/pom.xml"):
+              pom = ET.parse(path)
+              if pom.findtext("m:groupId", namespaces=ns) != "io.github.shahradbagheri":
+                  raise SystemExit(f"Verify and adopt the Central namespace in {path} before releasing.")
+              if not pom.findall("m:licenses/m:license", ns):
+                  raise SystemExit(f"Declare the approved license in {path}.")
+          PY
+          printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: validate
+    uses: ./.github/workflows/maven-reactor.yml
+    with:
+      ref: ${{ needs.validate.outputs.commit }}
+
+  upload:
+    needs: [validate, verify]
+    runs-on: ubuntu-latest
+    environment: maven-central
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.CENTRAL_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Sign and verify the Maven release bundle
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.CENTRAL_GPG_PASSPHRASE }}
+        run: |
+          stage="${RUNNER_TEMP}/central-release-staging"
+          mvn -B -ntp -Pcentral-release -DskipTests -DskipITs \
+            "-DaltDeploymentRepository=central-staging::file://$stage" clean deploy
+          python3 scripts/central_release_bundle.py "$stage" "${RUNNER_TEMP}/central-release.zip"
+      - name: Upload the bundle for Portal validation
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 scripts/central_release_bundle.py --upload "${RUNNER_TEMP}/central-release.zip" "$RELEASE_TAG"
