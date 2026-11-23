@@ -14,7 +14,8 @@ from zipfile import ZIP_DEFLATED, ZipFile
 ROOT = Path(__file__).resolve().parents[1]
 NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 ARTIFACT_SUFFIXES = {"", "-sources", "-javadoc"}
-CHECKSUM_SUFFIXES = [".asc", ".md5", ".sha1"]
+REQUIRED_SIDECARS = [".asc", ".md5", ".sha1"]
+OPTIONAL_SIDECARS = [".sha256", ".sha512"]
 
 
 def create_bundle(staging, output):
@@ -31,23 +32,24 @@ def create_bundle(staging, output):
     if poms != actual:
         raise ValueError(f"Unexpected or missing staged modules: {sorted(actual ^ poms)}")
 
+    release_files = []
     for artifact in sorted(poms):
         directory = namespace / artifact / version
         stem = artifact + "-" + version
         required = {stem + ".pom"}
         if artifact in jars:
             required |= {stem + suffix + ".jar" for suffix in ARTIFACT_SUFFIXES}
-        required |= {name + suffix for name in required for suffix in CHECKSUM_SUFFIXES}
+        optional = {name + suffix for name in required for suffix in OPTIONAL_SIDECARS}
+        required |= {name + suffix for name in required for suffix in REQUIRED_SIDECARS}
         absent = sorted(name for name in required if not (directory / name).is_file())
         if absent:
             raise ValueError(f"Incomplete staged artifacts for {artifact}: {absent}")
+        release_files.extend(directory / name for name in sorted(required | optional)
+                             if (directory / name).is_file())
 
     with ZipFile(output, "x", ZIP_DEFLATED) as archive:
-        for artifact in sorted(poms):
-            directory = namespace / artifact / version
-            for path in sorted(directory.iterdir()):
-                if path.is_file():
-                    archive.write(path, path.relative_to(staging).as_posix())
+        for path in release_files:
+            archive.write(path, path.relative_to(staging).as_posix())
     print(f"Verified signed release bundle with {len(poms)} modules.")
 
 
