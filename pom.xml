@@ -40,6 +40,7 @@
         <module>spring-boot-base-bom</module>
         <module>base-core</module>
         <module>base-data-jpa</module>
+        <module>base-data-jpa-starter</module>
         <module>base-web</module>
         <module>base-web-starter</module>
         <module>base-websocket</module>
@@ -87,6 +88,11 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-data-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-data-jpa-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

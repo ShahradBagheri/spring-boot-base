@@ -226,6 +226,14 @@ For auditing in a consuming Spring Boot application, supply an `AuditorAware<Str
 
 For auth libraries, follow [the standalone adoption guide](AUTH_MODULE_ADOPTION.md) to select migrations and register the required Spring beans.
 
+## Use the JPA starter in a separate application
+
+Import `spring-boot-base-bom` and declare `com.notshahrad:base-data-jpa-starter` without a separate version. Supply your database driver, datasource settings, and schema or migrations in the application.
+
+Set `base.data.jpa.auditing.enabled=true` to let the starter populate `BaseEntity` timestamps. Auditing defaults to disabled. The inherited timestamp columns are required, so enable the starter's auditing or provide your own JPA auditing before persisting these entities. A consumer's existing `@EnableJpaAuditing` configuration takes precedence. If the starter enables auditing, it uses the application's `AuditorAware<String>` bean by type for actor attribution. Without a provider, the actor columns remain empty.
+
+Put concrete entities and repositories under your Spring Boot application's package to use its default discovery. For types outside that package, configure `@EntityScan(basePackageClasses = ...)` and `@EnableJpaRepositories(basePackageClasses = ...)` for the relevant entity and repository packages. `BaseEntity` contributes inherited mappings as a mapped superclass, so the application only needs to discover its concrete entities.
+
 ## Add a new optional module
 
 For starter modules, follow the [starter and auto-configuration conventions](STARTER_CONVENTIONS.md).
