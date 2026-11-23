@@ -61,3 +61,9 @@ staging=$(mktemp -d)
 mvn clean deploy "-DaltDeploymentRepository=publication-test::file://${staging}"
 python3 scripts/verify_bom_consumer.py --repository "${staging}"
 ```
+
+## Verify a release candidate
+
+Set the same release version in the reactor parent, each module's parent reference, and the standalone BOM. Use an immutable tag such as `v1.0.0-rc.1` on that commit. Run the **Verify a Base release candidate** workflow with the tag. The workflow checks the version alignment and prints the Java and Spring Boot baselines for the release notes, then runs the full reactor verification and temporary staging build on that tag.
+
+Keep the release notes and deployment tied to the verified commit. If verification or staging fails, resolve the failure before promoting a candidate. After an artifact version is publicly available, use a new version for changes. See the [release version and immutability policy](#version-rules).
