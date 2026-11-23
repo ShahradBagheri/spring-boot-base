@@ -1,0 +1,36 @@
+name: Verify a Base release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to verify, such as v1.0.0-rc.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.validate.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 0
+      - name: Verify tag, module versions, and release baselines
+        id: validate
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 scripts/verify_release_tag.py "$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: validate
+    uses: ./.github/workflows/maven-reactor.yml
+    with:
+      ref: ${{ needs.validate.outputs.commit }}

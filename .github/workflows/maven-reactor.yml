@@ -3,6 +3,11 @@ name: Maven reactor verification
 on:
   push:
   pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
 
 jobs:
   verify:
@@ -23,6 +28,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

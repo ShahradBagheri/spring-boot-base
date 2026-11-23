@@ -63,3 +63,9 @@ python3 scripts/verify_bom_consumer.py --repository "${staging}"
 ```
 
 The [standalone web consumer](../verification/web-consumer/pom.xml) builds and starts from staged artifacts in CI. The [release verification workflow](../.github/workflows/released-consumer.yml) resolves the same fixture from Maven Central using a clean cache when a GitHub release is published, or on manual dispatch with an existing release version. Publish the artifacts and confirm Central can resolve them before publishing the GitHub release.
+
+## Verify a release candidate
+
+Set the same release version in the reactor parent, each module's parent reference, and the standalone BOM. Use an immutable tag such as `v1.0.0-rc.1` on that commit. Run the **Verify a Base release candidate** workflow with the tag. The workflow checks the version alignment and prints the Java and Spring Boot baselines for the release notes, then runs the full reactor verification and temporary staging build on that tag.
+
+Keep the release notes and deployment tied to the verified commit. If verification or staging fails, resolve the failure before promoting a candidate. After an artifact version is publicly available, use a new version for changes. See the [release version and immutability policy](#version-rules).
