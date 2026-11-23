@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
+         child.project.url.inherit.append.path="false"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -19,6 +20,21 @@
 
     <name>Spring Boot Base</name>
     <description>Reusable Spring Boot application foundation</description>
+    <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    <developers>
+        <developer>
+            <id>ShahradBagheri</id>
+            <name>Shahrad Bagheri</name>
+            <url>https://github.com/ShahradBagheri</url>
+        </developer>
+    </developers>
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/ShahradBagheri/spring-boot-base.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/ShahradBagheri/spring-boot-base.git</developerConnection>
+        <url>https://github.com/ShahradBagheri/spring-boot-base</url>
+    </scm>
 
     <modules>
         <module>spring-boot-base-bom</module>
@@ -41,18 +57,10 @@
 
     <properties>
         <java.version>25</java.version>
-        <spring-ai.version>2.0.3</spring-ai.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.springframework.ai</groupId>
-                <artifactId>spring-ai-bom</artifactId>
-                <version>${spring-ai.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-websocket</artifactId>

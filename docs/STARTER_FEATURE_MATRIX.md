@@ -1,6 +1,6 @@
 # Standalone consumption audit
 
-Baseline: Spring Boot 4.1.2, Java 25, and the reactor after [PR #153](https://github.com/ShahradBagheri/spring-boot-base/pull/153). The current Maven coordinates are `com.notshahrad:<artifact>:0.0.1-SNAPSHOT`. The root `spring-boot-base` POM inherits Boot's starter parent and manages versions across the reactor, including the Spring AI 2.0.3 BOM. An external Maven build needs this parent POM available for library dependency resolution today. The consumer can use its own parent.
+Baseline: Spring Boot 4.1.2, Java 25, and the reactor after [PR #153](https://github.com/ShahradBagheri/spring-boot-base/pull/153). The current Maven coordinates are `com.notshahrad:<artifact>:0.0.1-SNAPSHOT`. The root `spring-boot-base` POM inherits Boot's starter parent and manages shared versions across the reactor. Only `base-mcp-server` imports the Spring AI 2.0.3 BOM. An external Maven build needs this parent POM available for library dependency resolution today. The consumer can use its own parent.
 
 The matrices cover production POM dependencies and source-level wiring. Test dependencies stay scoped to the reactor. See [the module guide](MODULES.md) for the existing build and extension workflow.
 
@@ -11,11 +11,11 @@ Package names in the table use `legacy` for `com.notshahrad.spring_boot_base` an
 | Artifact | Java packages | Direct base dependencies | Direct external dependencies | Boot starters added to the consumer classpath, including via base modules |
 | --- | --- | --- | --- | --- |
 | `base-core` | `legacy.common.exception` | — | — | — |
-| `base-data-jpa` | `legacy.common.config`, `legacy.common.entity` | — | Boot Data JPA starter, optional Lombok | Data JPA |
+| `base-data-jpa` | `legacy.common.config`, `legacy.common.entity` | — | Boot Data JPA starter, provided Lombok | Data JPA |
 | `base-web` | `legacy.common.exception`, `legacy.common.response` | `base-core` | Boot Web MVC starter | Web MVC |
 | `base-websocket` | `base.websocket` | — | Boot WebSocket starter | WebSocket, Web MVC via the WebSocket stack |
 | `base-security` | `legacy.config`, `base.security.web` | `base-web` | Boot Security starter | Security, Web MVC |
-| `base-auth` | `legacy.auth` | `base-data-jpa` | Boot Data JPA starter | Data JPA, already supplied by `base-data-jpa` |
+| `base-auth` | `legacy.auth` | `base-data-jpa` | — | Data JPA via `base-data-jpa` |
 | `base-auth-oauth2` | `legacy.auth.oauth2` | `base-auth`, `base-security` | Boot Security OAuth2 Client starter | Security OAuth2 Client, Security, Web MVC, Data JPA |
 | `base-auth-token` | `legacy.auth.token` | `base-auth`, `base-security` | `spring-security-oauth2-resource-server`, `spring-security-oauth2-jose` | Data JPA, Security, Web MVC |
 | `base-auth-email` | `legacy.auth.email` | `base-auth` | `spring-jdbc`, `spring-security-crypto`, `bcprov-jdk18on` 1.87 | Data JPA |
@@ -56,6 +56,6 @@ The demo also owns guest sessions and drafts (`base.auth.guest.enabled`, `base.a
 - **Scan scope.** `base-core` and `base-web` share the `legacy.common.exception` package, and the demo and security library share `legacy.config`. For starter registration, prefer importing known components over scanning the legacy root. Keep consumer entity and repository discovery intact when adding the optional auth packages.
 - **Security chain composition.** A classpath dependency on Boot Security can change servlet behavior even before a base feature is enabled. Check the fallback chain when OAuth2, bearer routes, and MCP each install a scoped chain. Test consumer overrides by behavior and check that WebSocket handshake and STOMP destination authorization remain application choices.
 - **Schema ownership.** The reference SQL lives exclusively under [the demo migration directory](../demo-app/src/main/resources/db/migration/). Flyway runs the files it finds regardless of feature flags. Consumers select and version the required scripts in their own history as described in the [auth adoption guide](AUTH_MODULE_ADOPTION.md). Keep migrations, drivers, and sample profiles out of default starter activation.
-- **Publication.** Publish or safely flatten the library parent before expecting the current child POMs to resolve remotely. Keep the generator, demo, and consumer parent distinct from the BOM. Verify the BOM and first starters from a clean external Maven project when the artifacts are available.
+- **Publication.** Stage the shared build parent alongside the BOM and library JARs so Maven can resolve the child POMs outside the source tree. CI checks staging with a fresh consumer cache. The generator and executable demo stay outside the library distribution.
 
 The [Maven distribution decision](MAVEN_DISTRIBUTION.md) comes before the public BOM and POM work in [#157](https://github.com/ShahradBagheri/spring-boot-base/issues/157) and [#158](https://github.com/ShahradBagheri/spring-boot-base/issues/158).

@@ -49,3 +49,15 @@ An existing app that vendors or clones the reactor can stay on its current commi
 2. Prepare a Central Portal publishing token and a PGP signing key, and make the signing public key available for Central validation. Store the publishing credentials and private signing material in protected CI secrets when implementing publishing. [Portal token guide](https://central.sonatype.org/publish/generate-portal-token/) · [Signing requirements](https://central.sonatype.org/publish/requirements/gpg/)
 3. Adopt Apache License 2.0 for public releases after the repository owner approves the grant. Add the repository license text and matching POM metadata before publication, and preserve any applicable third-party notices. The current repository has no license file. [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 4. Assemble release POMs with project, developer, license and SCM metadata, plus sources and Javadoc for published JARs and signatures and checksums for the deployment. Validate in Central Portal before releasing. Test the published artifacts from an external app and a clean Maven cache. [Central publishing requirements](https://central.sonatype.org/publish/requirements/) · [Publishing issue #172](https://github.com/ShahradBagheri/spring-boot-base/issues/172) · [External consumer issue #174](https://github.com/ShahradBagheri/spring-boot-base/issues/174)
+
+## Verify the artifacts locally
+
+The standard Maven deploy lifecycle stages the `spring-boot-base` parent POM, the BOM, and the library JARs together. Library POMs refer to the parent by Maven coordinates when resolved from the repository. The demo participates in the reactor build and skips artifact deployment.
+
+Run this from the reactor with Java 25, Maven, and Docker. It deploys to a new temporary file repository and resolves the staged artifacts from a standalone Boot POM using a separate empty Maven cache.
+
+```bash
+staging=$(mktemp -d)
+mvn clean deploy "-DaltDeploymentRepository=publication-test::file://${staging}"
+python3 scripts/verify_bom_consumer.py --repository "${staging}"
+```
