@@ -45,6 +45,7 @@
         <module>base-web-starter</module>
         <module>base-websocket</module>
         <module>base-security</module>
+        <module>base-security-starter</module>
         <module>base-auth</module>
         <module>base-auth-oauth2</module>
         <module>base-auth-token</module>
@@ -101,6 +102,11 @@
             <dependency>
                 <groupId>com.notshahrad</groupId>
                 <artifactId>base-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.notshahrad</groupId>
+                <artifactId>base-security-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
