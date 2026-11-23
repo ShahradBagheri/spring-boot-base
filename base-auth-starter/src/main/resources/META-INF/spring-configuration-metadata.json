@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "base.auth.local.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable local identity persistence and trusted identity mapping."
+    }
+  ]
+}

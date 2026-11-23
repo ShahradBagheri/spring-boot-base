@@ -31,3 +31,21 @@ Use `ApplicationContextRunner` for regular configurations and the servlet or rea
 | Optional web or security feature omitted | Verify that its route mappings and scoped filter chain are absent. An HTTP 401 alone can come from a fallback chain and does not prove routing is absent. |
 
 The existing [SMTP configuration](../base-mail-smtp/src/main/java/com/notshahrad/spring_boot_base/mail/smtp/SmtpEmailAutoConfiguration.java) and [context tests](../base-mail-smtp/src/test/java/com/notshahrad/spring_boot_base/mail/smtp/SmtpEmailAutoConfigurationTest.java) exercise classpath gating, explicit enablement, override, settings validation, and registration. The [demo's servlet tests](../demo-app/src/test/java/com/notshahrad/spring_boot_base/security/SecurityAccessMockMvcTest.java) guard against registering WebSocket or MCP routes and the MCP filter chain without explicit activation.
+
+## Starter activation and defaults
+
+| Starter | Activation |
+| --- | --- |
+| Web | Installs MVC error advice when selected in a servlet app. An application handler can replace it. |
+| Security | Installs the servlet security fallback when selected. Application filter chains can replace it. |
+| Data JPA | `base.data.jpa.auditing.enabled` defaults to `false`. Boot handles application-owned entity and repository discovery. |
+| Local auth | `base.auth.local.enabled` defaults to `false`. |
+| Token | `base.auth.token.enabled` defaults to `false`. The token TTL defaults to five minutes. |
+| OIDC | `base.auth.oauth2.enabled` defaults to `false`. The app supplies the Spring Security client registrations. |
+| Email auth | `base.auth.email.enabled` and `base.auth.email.password-enabled` both default to `false`. |
+| SMTP | `base.mail.smtp.enabled` defaults to `false`. STARTTLS is the default when enabled. |
+| Phone auth | `base.auth.phone.enabled` and `base.auth.phone.otp.enabled` both default to `false`. |
+| WebSocket | `base.websocket.enabled` defaults to `false`. The origin allowlist is empty by default, so the endpoint accepts same-origin clients. |
+| MCP | `base.mcp.server.enabled` defaults to `false`. |
+
+The configuration JARs include Spring Boot property metadata. The [adoption guides](AUTH_MODULE_ADOPTION.md) describe the required credentials, keys, and migrations for enabled features.

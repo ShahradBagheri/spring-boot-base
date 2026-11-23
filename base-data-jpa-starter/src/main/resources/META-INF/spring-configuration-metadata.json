@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "base.data.jpa.auditing.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable Base JPA auditing."
+    }
+  ]
+}

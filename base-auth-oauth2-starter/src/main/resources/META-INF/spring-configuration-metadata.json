@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "base.auth.oauth2.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable the scoped OIDC login chain."
+    }
+  ]
+}

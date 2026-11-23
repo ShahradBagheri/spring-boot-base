@@ -113,6 +113,12 @@ def coordinates(entries):
         yield from coordinates(entry.get("children", []))
 
 
+def effective_versions(entries):
+    for entry in entries:
+        yield entry["groupId"], entry["artifactId"], entry["version"]
+        yield from effective_versions(entry.get("children", []))
+
+
 with TemporaryDirectory(prefix="spring-boot-base-consumer-") as directory:
     project = Path(directory)
     (project / "pom.xml").write_text(CONSUMER_POM, encoding="utf-8")
@@ -144,6 +150,16 @@ with TemporaryDirectory(prefix="spring-boot-base-consumer-") as directory:
         assert {(entry["groupId"], entry["artifactId"], entry["version"]) for entry in selected} == {
             (base_group, library, base_version) for library in libraries
         }, selected
+
+        versions = set(effective_versions(selected))
+        expected_families = {
+            "org.springframework.boot": "4.1.2",
+            "org.springframework.security": "7.1.2",
+            "org.springframework.ai": "2.0.3",
+        }
+        for group, expected in expected_families.items():
+            family = {(artifact, version) for owner, artifact, version in versions if owner == group}
+            assert family and {version for _, version in family} == {expected}, (group, expected, family)
 
         resolved = set(coordinates(selected))
         forbidden = {

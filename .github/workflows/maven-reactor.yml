@@ -52,6 +52,14 @@ jobs:
             "-Dmaven.repo.local=${RUNNER_TEMP}/staged-consumer-cache" \
             "-Dbase.group=$base_group" "-Dbase.version=$base_version" \
             "-Dbase.repository=file://${RUNNER_TEMP}/base-maven-staging" clean verify
+          matrix_pom=verification/starter-matrix/pom.xml
+          matrix_cache="${RUNNER_TEMP}/staged-consumer-cache"
+          opts=("-Dmaven.repo.local=$matrix_cache" "-Dbase.group=$base_group" "-Dbase.version=$base_version"
+                "-Dbase.repository=file://${RUNNER_TEMP}/base-maven-staging")
+          mvn --batch-mode --no-transfer-progress -f "$matrix_pom" "${opts[@]}" \
+            '-Dtest=StarterMatrixTest#withoutBaseTheApplicationUsesBootDefaults' test
+          mvn --batch-mode --no-transfer-progress -f "$matrix_pom" "${opts[@]}" -Pall-starters \
+            '-Dtest=StarterMatrixTest#optionalFeaturesRemainInactiveWithAllStartersPresent+scopedMcpChainAndWebSocketKeepTheApplicationFallback' test
       - name: Show failing test reports
         if: failure()
         run: |

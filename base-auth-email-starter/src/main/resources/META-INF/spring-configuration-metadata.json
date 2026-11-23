@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "base.auth.email.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable email identity persistence."
+    },
+    {
+      "name": "base.auth.email.password-enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable email password and challenge services."
+    }
+  ]
+}
